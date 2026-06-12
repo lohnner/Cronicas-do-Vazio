@@ -499,8 +499,12 @@ function aplicarEstadoPioneira(estadoRecebido = null) {
 
   const combustivelTexto = document.getElementById("combustivelNaveTexto");
   const combustivelBarra = document.getElementById("combustivelNaveBarra");
+  const combustivelLocalizacaoTexto = document.getElementById("combustivelLocalizacaoTexto");
+  const combustivelLocalizacaoBarra = document.getElementById("combustivelLocalizacaoBarra");
   const usoTexto = document.getElementById("usoNaveTexto");
   const usoBarra = document.getElementById("usoNaveBarra");
+  const usoLocalizacaoTexto = document.getElementById("usoLocalizacaoTexto");
+  const usoLocalizacaoBarra = document.getElementById("usoLocalizacaoBarra");
 
   const capacidadeCombustivel = 80;
   const capacidadeUso = 100;
@@ -511,21 +515,24 @@ function aplicarEstadoPioneira(estadoRecebido = null) {
   const percentualCombustivel = (combustivel / capacidadeCombustivel) * 100;
   const percentualUso = (uso / capacidadeUso) * 100;
 
-  if (combustivelTexto) {
-    combustivelTexto.textContent = `${Number.isInteger(combustivel) ? combustivel : combustivel.toFixed(1)} / ${capacidadeCombustivel}`;
-  }
+  const textoCombustivel = `${Number.isInteger(combustivel) ? combustivel : combustivel.toFixed(1)} / ${capacidadeCombustivel}`;
+  const textoUso = `${Number.isInteger(uso) ? uso : uso.toFixed(1)} / ${capacidadeUso}`;
 
-  if (combustivelBarra) {
-    combustivelBarra.style.width = `${percentualCombustivel}%`;
-  }
+  [combustivelTexto, combustivelLocalizacaoTexto].forEach((elemento) => {
+    if (elemento) elemento.textContent = textoCombustivel;
+  });
 
-  if (usoTexto) {
-    usoTexto.textContent = `${Number.isInteger(uso) ? uso : uso.toFixed(1)} / ${capacidadeUso}`;
-  }
+  [combustivelBarra, combustivelLocalizacaoBarra].forEach((elemento) => {
+    if (elemento) elemento.style.width = `${percentualCombustivel}%`;
+  });
 
-  if (usoBarra) {
-    usoBarra.style.width = `${percentualUso}%`;
-  }
+  [usoTexto, usoLocalizacaoTexto].forEach((elemento) => {
+    if (elemento) elemento.textContent = textoUso;
+  });
+
+  [usoBarra, usoLocalizacaoBarra].forEach((elemento) => {
+    if (elemento) elemento.style.width = `${percentualUso}%`;
+  });
 }
 
 aplicarEstadoPioneira();
@@ -694,7 +701,6 @@ function renderizarInventarioPioneira() {
     if (!item) return;
 
     slot.classList.add("preenchido");
-    slot.title = `${item.nome}: ${item.quantidade}`;
     slot.setAttribute("aria-label", `${item.nome}, quantidade ${item.quantidade}`);
 
     const elemento = document.createElement("div");
@@ -834,9 +840,23 @@ const botaoReabastecer = document.getElementById("botaoReabastecer");
 const botaoReparar = document.getElementById("botaoReparar");
 
 const modalVenda = document.getElementById("modalVenda");
+const tituloModalVenda = document.getElementById("tituloModalVenda");
 const textoConfirmacaoVenda = document.getElementById("textoConfirmacaoVenda");
+const inputQuantidadeVenda = document.getElementById("inputQuantidadeVenda");
 const cancelarVenda = document.getElementById("cancelarVenda");
 const confirmarVenda = document.getElementById("confirmarVenda");
+const textoAjudaNaveMae = document.querySelector(".nave-mae-ajuda");
+const rotuloCombustivelLocalizacao = document.querySelector(
+  ".estado-localizacao .estado-nave:first-child .estado-nave-topo span"
+);
+
+if (textoAjudaNaveMae) {
+  textoAjudaNaveMae.textContent = "Venda";
+}
+
+if (rotuloCombustivelLocalizacao) {
+  rotuloCombustivelLocalizacao.textContent = "Xen\u00f4nio-9";
+}
 
 const LOCALIZACOES = {
   Terra: {
@@ -1019,6 +1039,7 @@ iniciarViagem = function(destino) {
 
 // ===== VENDA DE OURO NA NAVE MÃE =====
 let quantidadeOuroParaVenda = 0;
+let quantidadeMaximaOuroParaVenda = 0;
 
 function renderizarInventarioNaveMae() {
   if (!inventarioNaveMae) return;
@@ -1037,7 +1058,6 @@ function renderizarInventarioNaveMae() {
       <strong>${item.quantidade}</strong>
       <span>${item.nome}</span>
     `;
-    botao.title = `${item.nome}: ${item.quantidade}`;
     botao.setAttribute("aria-label", `${item.nome}, quantidade ${item.quantidade}`);
 
     if (item.id === "ouro") {
@@ -1103,6 +1123,118 @@ function venderTodoOuro() {
   fecharVendaOuro();
 }
 
+function normalizarQuantidadeVenda(valor) {
+  const maximo = Math.max(0, Math.floor(Number(quantidadeMaximaOuroParaVenda) || 0));
+  const numero = Math.floor(Number(valor));
+
+  if (maximo <= 0) return 0;
+  if (!Number.isFinite(numero) || numero < 1) return 1;
+
+  return Math.min(numero, maximo);
+}
+
+function atualizarResumoVenda(ajustarCampo = false) {
+  const quantidade = normalizarQuantidadeVenda(
+    inputQuantidadeVenda ? inputQuantidadeVenda.value : quantidadeOuroParaVenda
+  );
+
+  quantidadeOuroParaVenda = quantidade;
+
+  if (inputQuantidadeVenda && ajustarCampo) {
+    inputQuantidadeVenda.value = String(quantidade);
+  }
+
+  if (textoConfirmacaoVenda) {
+    textoConfirmacaoVenda.textContent =
+      `Voc\u00ea possui ${quantidadeMaximaOuroParaVenda} de ouro. Cada ouro vale 1 cr\u00e9dito.`;
+  }
+
+  if (confirmarVenda) {
+    confirmarVenda.textContent = `Vender ${quantidade}`;
+  }
+}
+
+abrirVendaOuro = function(quantidade) {
+  quantidadeMaximaOuroParaVenda = Math.max(0, Math.floor(Number(quantidade) || 0));
+  quantidadeOuroParaVenda = Math.min(1, quantidadeMaximaOuroParaVenda);
+
+  if (tituloModalVenda) {
+    tituloModalVenda.textContent = "Vender ouro?";
+  }
+
+  if (inputQuantidadeVenda) {
+    inputQuantidadeVenda.max = String(quantidadeMaximaOuroParaVenda);
+    inputQuantidadeVenda.value = String(quantidadeOuroParaVenda);
+    inputQuantidadeVenda.disabled = quantidadeMaximaOuroParaVenda <= 0;
+  }
+
+  atualizarResumoVenda(true);
+  modalVenda.classList.add("ativo");
+  modalVenda.setAttribute("aria-hidden", "false");
+
+  if (inputQuantidadeVenda) {
+    inputQuantidadeVenda.focus();
+    inputQuantidadeVenda.select();
+  }
+};
+
+fecharVendaOuro = function() {
+  modalVenda.classList.remove("ativo");
+  modalVenda.setAttribute("aria-hidden", "true");
+  quantidadeOuroParaVenda = 0;
+  quantidadeMaximaOuroParaVenda = 0;
+
+  if (inputQuantidadeVenda) {
+    inputQuantidadeVenda.value = "1";
+    inputQuantidadeVenda.removeAttribute("max");
+    inputQuantidadeVenda.disabled = false;
+  }
+
+  if (confirmarVenda) {
+    confirmarVenda.textContent = "Vender 1";
+  }
+};
+
+venderTodoOuro = function() {
+  quantidadeOuroParaVenda = normalizarQuantidadeVenda(
+    inputQuantidadeVenda ? inputQuantidadeVenda.value : quantidadeOuroParaVenda
+  );
+
+  if (quantidadeOuroParaVenda <= 0) return;
+
+  const inventario = carregarInventarioPioneira();
+  const indice = inventario.findIndex((item) => item?.id === "ouro");
+
+  if (indice < 0) {
+    fecharVendaOuro();
+    return;
+  }
+
+  const quantidadeVendida = Math.min(
+    quantidadeOuroParaVenda,
+    inventario[indice].quantidade
+  );
+  const creditosAtuais = Number(localStorage.getItem(CHAVE_CREDITOS) || "100");
+
+  localStorage.setItem(
+    CHAVE_CREDITOS,
+    String(creditosAtuais + quantidadeVendida)
+  );
+
+  inventario[indice].quantidade -= quantidadeVendida;
+
+  if (inventario[indice].quantidade <= 0) {
+    inventario[indice] = null;
+  }
+
+  salvarInventarioPioneira(inventario);
+  aplicarCreditosIniciais();
+  renderizarInventarioNaveMae();
+  fecharVendaOuro();
+};
+
+inputQuantidadeVenda?.addEventListener("input", () => atualizarResumoVenda(false));
+inputQuantidadeVenda?.addEventListener("change", () => atualizarResumoVenda(true));
 cancelarVenda?.addEventListener("click", fecharVendaOuro);
 confirmarVenda?.addEventListener("click", venderTodoOuro);
 

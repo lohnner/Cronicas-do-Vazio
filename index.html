@@ -324,6 +324,36 @@
                   <div class="barra-viagem" aria-label="Progresso da viagem">
                     <div class="barra-viagem-preenchida" id="barraViagemPreenchida"></div>
                   </div>
+
+                  <div class="barras-estado-nave estado-localizacao">
+                    <div class="estado-nave">
+                      <div class="estado-nave-topo">
+                        <span>XenÃ´nio-9</span>
+                        <strong id="combustivelLocalizacaoTexto">80 / 80</strong>
+                      </div>
+                      <div class="estado-nave-barra">
+                        <div
+                          class="estado-nave-preenchimento combustivel"
+                          id="combustivelLocalizacaoBarra"
+                          style="width: 100%;"
+                        ></div>
+                      </div>
+                    </div>
+
+                    <div class="estado-nave">
+                      <div class="estado-nave-topo">
+                        <span>Integridade</span>
+                        <strong id="usoLocalizacaoTexto">100 / 100</strong>
+                      </div>
+                      <div class="estado-nave-barra">
+                        <div
+                          class="estado-nave-preenchimento uso"
+                          id="usoLocalizacaoBarra"
+                          style="width: 100%;"
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </aside>
 
@@ -644,10 +674,22 @@
   <div class="modal-venda" id="modalVenda" aria-hidden="true">
     <div class="modal-venda-caixa">
       <span class="modal-venda-subtitulo">COMÉRCIO DA NAVE MÃE</span>
-      <h2>Vender 1 ouro?</h2>
+      <h2 id="tituloModalVenda">Vender ouro?</h2>
       <p id="textoConfirmacaoVenda">
         Tem certeza de que deseja vender 1 de ouro por 1 crédito?
       </p>
+
+      <label class="controle-venda-quantidade" for="inputQuantidadeVenda">
+        <span>Quantidade</span>
+        <input
+          type="number"
+          id="inputQuantidadeVenda"
+          min="1"
+          step="1"
+          value="1"
+          inputmode="numeric"
+        />
+      </label>
 
       <div class="modal-venda-acoes">
         <button type="button" id="cancelarVenda">Cancelar</button>
