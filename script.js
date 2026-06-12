@@ -1700,7 +1700,9 @@ function atualizarSistemaTripulacao() {
   const imagemCapitao = TRIPULANTES.lian.imagem;
 
   if (imagemPerfil) {
-    imagemPerfil.src = imagemCapitao;
+    if (imagemPerfil.getAttribute("src") !== imagemCapitao) {
+      imagemPerfil.src = imagemCapitao;
+    }
   }
 
   if (capacidadeTripulacaoTexto) {
