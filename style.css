@@ -2581,3 +2581,104 @@ body.modal-aberto {
 .aba-planeta {
   width: 104px;
 }
+
+/* ===== AJUSTE DE LEGIBILIDADE ===== */
+body {
+  font-size: 15px;
+}
+
+button,
+input {
+  font-size: 13px;
+}
+
+.aba-botao {
+  font-size: 12px;
+}
+
+.aba-icone {
+  font-size: 11px;
+}
+
+.dado-label,
+.dado-linha strong,
+.progresso-conteudo span,
+.progresso-conteudo small,
+.modal-avatar-subtitulo,
+.modal-avatar-descricao,
+.opcao-avatar.ativo::after,
+.opcao-avatar > span,
+.card-planeta span,
+.sistema-label,
+.sistema-linha strong,
+.viagem-status span,
+.viagem-status strong,
+.modal-viagem-subtitulo,
+.modal-viagem-caixa p,
+.item-nave-texto span,
+.nave-equipada-info span,
+.informacao-nave-linha span,
+.informacao-nave-linha strong,
+.estado-nave-topo span,
+.estado-nave-topo strong,
+.resumo-viagem-linha span,
+.resumo-viagem-linha strong,
+.planeta-info-linha span,
+.planeta-info-linha strong,
+.creditos-topo span,
+.evento-mineracao-info p,
+.mineracao-status span,
+.mineracao-status strong,
+.nave-mae-ajuda,
+.item-venda-nave-mae strong,
+.item-venda-nave-mae span,
+.servico-nave-mae span,
+.servico-nave-mae button,
+.modal-venda-subtitulo,
+.modal-venda-caixa p,
+.modal-venda-acoes button {
+  font-size: 12px;
+}
+
+.progresso-box h2,
+.xp-selo,
+.nave-equipada-perfil h2,
+.inventario-nave h3,
+.servico-nave-mae strong {
+  font-size: 13px;
+}
+
+.xp-texto,
+.item-nave-texto strong,
+.coluna-planeta h2,
+.evento-mineracao-info h3,
+.creditos-topo strong {
+  font-size: 15px;
+}
+
+.modal-caixa p,
+.botao-confirmar-viagem,
+.botao-cancelar-viagem,
+.botao-coletar-ouro,
+.botao-minerar {
+  font-size: 12px;
+}
+
+.modal-caixa h2,
+.modal-avatar-caixa h2,
+.modal-viagem-caixa h2,
+.modal-venda-caixa h2,
+.progresso-conteudo strong,
+.nave-equipada-info strong {
+  font-size: 21px;
+}
+
+.progresso-conteudo span {
+  line-height: 1.2;
+  white-space: normal;
+}
+
+.progresso-card {
+  gap: 9px;
+  padding: 11px;
+}
