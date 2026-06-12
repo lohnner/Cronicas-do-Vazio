@@ -2167,14 +2167,32 @@ function sincronizarEnergiaFabrica() {
 
   if (atualizadoEm > agora) atualizadoEm = agora;
 
-  while (atualizadoEm + 60000 <= agora) {
-    const proximoMinuto = atualizadoEm + 60000;
-    const fabricandoNesseMinuto = fabricacao && proximoMinuto <= fabricacao.fim;
+  const minutosPassados = Math.floor((agora - atualizadoEm) / 60000);
 
-    energiaFabrica += fabricandoNesseMinuto ? -1 : 1;
-    energiaFabrica = Math.max(0, Math.min(100, energiaFabrica));
-    atualizadoEm = proximoMinuto;
+  if (minutosPassados <= 0) {
+    salvarEnergiaFabrica(energiaFabrica, atualizadoEm);
+    return;
   }
+
+  let minutosFabricando = 0;
+
+  if (fabricacao) {
+    const primeiroMinuto = Math.max(
+      1,
+      Math.floor((fabricacao.inicio - atualizadoEm) / 60000) + 1
+    );
+    const ultimoMinuto = Math.min(
+      minutosPassados,
+      Math.floor((fabricacao.fim - atualizadoEm) / 60000)
+    );
+
+    minutosFabricando = Math.max(0, ultimoMinuto - primeiroMinuto + 1);
+  }
+
+  const minutosCarregando = minutosPassados - minutosFabricando;
+  energiaFabrica += minutosCarregando - minutosFabricando;
+  energiaFabrica = Math.max(0, Math.min(100, energiaFabrica));
+  atualizadoEm += minutosPassados * 60000;
 
   salvarEnergiaFabrica(energiaFabrica, atualizadoEm);
 }

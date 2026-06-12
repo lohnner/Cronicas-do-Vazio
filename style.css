@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700&display=swap');
-
 * {
   box-sizing: border-box;
   margin: 0;
@@ -401,6 +399,10 @@ input {
 .modal-nome.ativo,
 .modal-avatar.ativo {
   display: flex;
+}
+
+.modal-nome {
+  z-index: 120;
 }
 
 .modal-caixa,
