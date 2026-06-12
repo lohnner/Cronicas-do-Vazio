@@ -1020,6 +1020,27 @@ function calcularConsumoIntegridadeViagem(duracaoSegundos) {
   return calcularConsumoCombustivelViagem(duracaoSegundos) * 0.5;
 }
 
+function formatarNumeroRecurso(valor) {
+  return Number.isInteger(valor) ? String(valor) : valor.toFixed(1);
+}
+
+function calcularConsumoAtividade(duracaoSegundos) {
+  return {
+    combustivel: calcularConsumoCombustivelViagem(duracaoSegundos),
+    uso: calcularConsumoIntegridadeViagem(duracaoSegundos)
+  };
+}
+
+function temRecursosPioneiraParaAtividade(duracaoSegundos) {
+  const estado = carregarEstadoPioneira();
+  const consumo = calcularConsumoAtividade(duracaoSegundos);
+
+  return (
+    estado.combustivel >= consumo.combustivel &&
+    estado.uso >= consumo.uso
+  );
+}
+
 function atualizarInterfaceLocalizacao(local) {
   const dados = LOCALIZACOES[local] || LOCALIZACOES.Terra;
 
@@ -1908,7 +1929,13 @@ function preencherModalMineracao(mineracao) {
     imagemModalMineracao.alt = mineracao.titulo;
   }
   if (tempoModalMineracao) tempoModalMineracao.textContent = `Tempo: ${formatarDuracao(mineracao.tempoSegundos)}`;
-  if (requisitoModalMineracao) requisitoModalMineracao.textContent = `Requisito: ${mineracao.poderNecessario} poder`;
+  if (requisitoModalMineracao) {
+    const consumo = calcularConsumoAtividade(mineracao.tempoSegundos);
+
+    requisitoModalMineracao.textContent =
+      `Requisito: ${mineracao.poderNecessario} poder, ` +
+      `${consumo.combustivel} Xenônio-9 e ${formatarNumeroRecurso(consumo.uso)} integridade`;
+  }
   if (recompensaModalMineracao) {
     recompensaModalMineracao.textContent =
       `Recompensa: ${mineracao.recompensaQuantidade} ${mineracao.item.nome.toLowerCase()} + ${mineracao.xp} XP`;
@@ -1969,6 +1996,16 @@ function iniciarMineracaoSelecionada() {
     return;
   }
 
+  if (!temRecursosPioneiraParaAtividade(mineracao.tempoSegundos)) {
+    const consumo = calcularConsumoAtividade(mineracao.tempoSegundos);
+
+    alert(
+      `A Pioneira precisa de ${consumo.combustivel} Xenônio-9 e ` +
+      `${formatarNumeroRecurso(consumo.uso)} de integridade para iniciar esta mineração.`
+    );
+    return;
+  }
+
   mineracaoEmAndamento = true;
   atualizarEstadoVisualMineracao();
 
@@ -1981,11 +2018,23 @@ function iniciarMineracaoSelecionada() {
 
   const duracao = mineracao.tempoSegundos * 1000;
   const inicio = performance.now();
+  const estadoInicial = carregarEstadoPioneira();
+  const consumo = calcularConsumoAtividade(mineracao.tempoSegundos);
+  let ultimoSegundoAtualizado = -1;
 
   function atualizar(agora) {
     const decorrido = agora - inicio;
     const progresso = Math.min(decorrido / duracao, 1);
+    const segundos = Math.min(mineracao.tempoSegundos, Math.floor(decorrido / 1000));
     const restante = Math.max(0, Math.ceil((duracao - decorrido) / 1000));
+
+    if (segundos !== ultimoSegundoAtualizado || progresso >= 1) {
+      ultimoSegundoAtualizado = segundos;
+      salvarEstadoPioneira({
+        combustivel: estadoInicial.combustivel - (consumo.combustivel * progresso),
+        uso: estadoInicial.uso - (consumo.uso * progresso)
+      });
+    }
 
     if (barraModalMineracao) barraModalMineracao.style.width = `${progresso * 100}%`;
     if (tempoRestanteModalMineracao) tempoRestanteModalMineracao.textContent = formatarTempoCurto(restante);
@@ -1996,6 +2045,10 @@ function iniciarMineracaoSelecionada() {
     }
 
     mineracaoEmAndamento = false;
+    salvarEstadoPioneira({
+      combustivel: estadoInicial.combustivel - consumo.combustivel,
+      uso: estadoInicial.uso - consumo.uso
+    });
     salvarMineracaoPronta(mineracao);
 
     if (textoModalMineracao) textoModalMineracao.textContent = "Mineração concluída";
