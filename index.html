@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<html lang="pt-BR"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Crônicas do Vazio</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <main class="universo">
@@ -13,7 +12,7 @@
 
     <section class="janela-wrapper">
       <div class="logo-jogo">
-        <img src="imagens/utilitarios/logo.png" alt="Logo Crônicas do Vazio" />
+        <img src="imagens/utilitarios/logo.png" alt="Logo Crônicas do Vazio">
       </div>
 
       <section class="janela-jogo">
@@ -21,6 +20,11 @@
           <button class="aba-botao ativo" data-aba="perfil">
             <span class="aba-icone">◈</span>
             <span>Perfil</span>
+          </button>
+
+          <button class="aba-botao aba-missoes" data-aba="missoes">
+            <span class="aba-icone">✦</span>
+            <span>Missões</span>
           </button>
 
           <button class="aba-botao" data-aba="nave">
@@ -55,8 +59,8 @@
               <aside class="perfil-lateral">
                 <h1 class="nome-jogador" id="nomeJogador">SEM NOME</h1>
 
-                <button class="personagem-box" id="abrirSeletorPerfil" type="button">
-                  <img id="imagemPerfil" src="imagens/personagens/lian.png" alt="Imagem do perfil" />
+                <button class="personagem-box avatar-capitao-fixo" id="abrirSeletorPerfil" type="button" tabindex="-1" aria-disabled="true">
+                  <img id="imagemPerfil" src="imagens/personagens/lian.png" alt="Imagem do perfil">
                 </button>
 
                 <div class="dados-conta">
@@ -86,8 +90,8 @@
 
                   <div class="dado-linha">
                     <span class="dado-icone">◉</span>
-                    <span class="dado-label">Planeta</span>
-                    <strong>Terra</strong>
+                    <span class="dado-label">Local</span>
+                    <strong>Nave Mãe</strong>
                   </div>
 
                   <div class="dado-linha">
@@ -111,6 +115,10 @@
                   <strong id="creditosTopoPerfil">100</strong>
                 </div>
 
+                <button type="button" class="botao-reset-conta" id="botaoResetConta">
+                  Resetar conta
+                </button>
+
                 <div class="nivel-texto">Nível 1</div>
 
                 <div class="xp-area">
@@ -126,16 +134,16 @@
 
                   <div class="progresso-grade">
                     <article class="progresso-card">
-                      <div class="progresso-icone"><img src="imagens/utilitarios/perfilmissoes.png" alt="Missões" /></div>
+                      <div class="progresso-icone"><img src="imagens/utilitarios/perfilmissoes.png" alt="Missões"></div>
                       <div class="progresso-conteudo">
                         <span>Missões</span>
-                        <strong>0</strong>
+                        <strong id="missoesConcluidasPerfil">0</strong>
                         <small>Concluídas</small>
                       </div>
                     </article>
 
                     <article class="progresso-card">
-                      <div class="progresso-icone"><img src="imagens/utilitarios/perfilconquistas.png" alt="Conquistas" /></div>
+                      <div class="progresso-icone"><img src="imagens/utilitarios/perfilconquistas.png" alt="Conquistas"></div>
                       <div class="progresso-conteudo">
                         <span>Conquistas</span>
                         <strong>0</strong>
@@ -144,7 +152,7 @@
                     </article>
 
                     <article class="progresso-card">
-                      <div class="progresso-icone"><img src="imagens/utilitarios/perfilplanetasconquistados.png" alt="Planetas conquistados" /></div>
+                      <div class="progresso-icone"><img src="imagens/utilitarios/perfilplanetasconquistados.png" alt="Planetas conquistados"></div>
                       <div class="progresso-conteudo">
                         <span>Planetas conquistados</span>
                         <strong>0</strong>
@@ -153,7 +161,7 @@
                     </article>
 
                     <article class="progresso-card">
-                      <div class="progresso-icone"><img src="imagens/utilitarios/perfilvitorias.png" alt="Vitórias" /></div>
+                      <div class="progresso-icone"><img src="imagens/utilitarios/perfilvitorias.png" alt="Vitórias"></div>
                       <div class="progresso-conteudo">
                         <span>Vitórias</span>
                         <strong>0</strong>
@@ -167,11 +175,7 @@
                   <h2>Nave equipada</h2>
 
                   <div class="nave-equipada-card">
-                    <img
-                      id="imagemNaveEquipadaPerfil"
-                      src="imagens/naves/pioneira.png"
-                      alt="Nave equipada Pioneira"
-                    />
+                    <img id="imagemNaveEquipadaPerfil" src="imagens/naves/pioneira.png" alt="Nave equipada Pioneira">
 
                     <div class="nave-equipada-info">
                       <span>Nave atual</span>
@@ -183,19 +187,42 @@
             </div>
           </section>
 
+          <section class="painel-aba" id="missoes">
+            <div class="missoes-layout">
+              <aside class="missoes-lateral">
+                <div class="ia-missoes-retrato">
+                  <img id="imagemIaMissoes" src="imagens/personagens/lian.png" alt="IA de missões">
+                </div>
+
+                <h1>IA de Missões</h1>
+
+                <div class="missoes-resumo">
+                  <span>Missões concluídas</span>
+                  <strong id="missoesConcluidasAba">0</strong>
+                </div>
+              </aside>
+
+              <div class="divisoria-missoes" aria-hidden="true"></div>
+
+              <section class="missoes-conteudo">
+                <article class="missao-card">
+                  <span class="missao-etiqueta" id="etiquetaMissaoAtual">Treinamento de Viajante</span>
+                  <h2 id="tituloMissaoAtual">Bem-vindo ao treino de viajante</h2>
+                  <p id="textoMissaoAtual">Piloto, eu sou a IA de bordo da Nave Mãe. Antes de atravessar o vazio por conta própria, você precisa provar que sabe cumprir uma rota simples: sair da segurança da estação, chegar à Terra e voltar com seu primeiro recurso de mineração.</p>
+                  <div class="missao-objetivo" id="objetivoMissaoAtual">Viaje até a Terra e colete minério de ouro.</div>
+                </article>
+              </section>
+            </div>
+          </section>
+
           <section class="painel-aba" id="nave">
             <div class="naves-layout">
               <aside class="naves-lateral">
                 <h1 class="titulo-lista-naves">Naves</h1>
 
                 <div class="lista-naves">
-                  <button
-                    type="button"
-                    class="item-nave ativo"
-                    data-nave="Pioneira"
-                    data-imagem="imagens/naves/pioneira.png"
-                  >
-                    <img src="imagens/naves/pioneira.png" alt="Nave Pioneira" />
+                  <button type="button" class="item-nave ativo" data-nave="Pioneira" data-imagem="imagens/naves/pioneira.png">
+                    <img src="imagens/naves/pioneira.png" alt="Nave Pioneira">
 
                     <div class="item-nave-texto">
                       <strong>Pioneira</strong>
@@ -208,17 +235,11 @@
               <div class="divisoria-naves" aria-hidden="true"></div>
 
               <section class="naves-conteudo">
-                <h2 class="nome-nave-selecionada" id="nomeNaveSelecionada">
-                  Pioneira
-                </h2>
+                <h2 class="nome-nave-selecionada" id="nomeNaveSelecionada">Pioneira</h2>
 
                 <div class="nave-detalhes-principais">
                   <div class="imagem-nave-selecionada">
-                    <img
-                      id="imagemNaveSelecionada"
-                      src="imagens/naves/pioneira.png"
-                      alt="Nave Pioneira selecionada"
-                    />
+                    <img id="imagemNaveSelecionada" src="imagens/naves/pioneira.png" alt="Nave Pioneira selecionada">
                   </div>
 
                   <div class="informacoes-nave">
@@ -266,11 +287,7 @@
                           <strong id="combustivelNaveTexto">80 / 80</strong>
                         </div>
                         <div class="estado-nave-barra">
-                          <div
-                            class="estado-nave-preenchimento combustivel"
-                            id="combustivelNaveBarra"
-                            style="width: 100%;"
-                          ></div>
+                          <div class="estado-nave-preenchimento combustivel" id="combustivelNaveBarra" style="width: 100%;"></div>
                         </div>
                       </div>
 
@@ -280,11 +297,7 @@
                           <strong id="usoNaveTexto">100 / 100</strong>
                         </div>
                         <div class="estado-nave-barra">
-                          <div
-                            class="estado-nave-preenchimento uso"
-                            id="usoNaveBarra"
-                            style="width: 100%;"
-                          ></div>
+                          <div class="estado-nave-preenchimento uso" id="usoNaveBarra" style="width: 100%;"></div>
                         </div>
                       </div>
                     </div>
@@ -308,7 +321,7 @@
           <section class="painel-aba" id="localizacao">
             <div class="localizacao-layout">
               <aside class="localizacao-lateral">
-                <h1 class="nome-planeta" id="nomePlanetaLocalizacao">Planeta Terra</h1>
+                <h1 class="nome-planeta" id="nomePlanetaLocalizacao">Nave Mãe</h1>
 
                 <div class="planeta-box" id="caixaPlanetaAtual">
                   <div class="efeito-viagem" aria-hidden="true">
@@ -318,11 +331,7 @@
                     <span></span>
                   </div>
 
-                  <img
-                    id="imagemPlanetaAtual"
-                    src="imagens/local/sistemasolar/sistemasolarlocalplanetaterra.png"
-                    alt="Planeta atual"
-                  />
+                  <img id="imagemPlanetaAtual" src="imagens/local/sistemasolar/sistemasolarlocalnavemae.png" alt="Planeta atual">
                 </div>
 
                 <div class="sistema-info">
@@ -333,25 +342,21 @@
 
                   <div class="viagem-status">
                     <span id="textoViagem">Localização atual</span>
-                    <strong id="tempoViagem">Terra</strong>
+                    <strong id="tempoViagem">Nave Mãe</strong>
                   </div>
 
                   <div class="barra-viagem" aria-label="Progresso da viagem">
-                    <div class="barra-viagem-preenchida" id="barraViagemPreenchida"></div>
+                    <div class="barra-viagem-preenchida" id="barraViagemPreenchida" style="width: 0%;"></div>
                   </div>
 
                   <div class="barras-estado-nave estado-localizacao">
                     <div class="estado-nave">
                       <div class="estado-nave-topo">
-                        <span>XenÃ´nio-9</span>
+                        <span>Xenônio-9</span>
                         <strong id="combustivelLocalizacaoTexto">80 / 80</strong>
                       </div>
                       <div class="estado-nave-barra">
-                        <div
-                          class="estado-nave-preenchimento combustivel"
-                          id="combustivelLocalizacaoBarra"
-                          style="width: 100%;"
-                        ></div>
+                        <div class="estado-nave-preenchimento combustivel" id="combustivelLocalizacaoBarra" style="width: 100%;"></div>
                       </div>
                     </div>
 
@@ -361,11 +366,7 @@
                         <strong id="usoLocalizacaoTexto">100 / 100</strong>
                       </div>
                       <div class="estado-nave-barra">
-                        <div
-                          class="estado-nave-preenchimento uso"
-                          id="usoLocalizacaoBarra"
-                          style="width: 100%;"
-                        ></div>
+                        <div class="estado-nave-preenchimento uso" id="usoLocalizacaoBarra" style="width: 100%;"></div>
                       </div>
                     </div>
                   </div>
@@ -378,39 +379,18 @@
                 <h2 class="titulo-sistema">Sistema Solar</h2>
 
                 <div class="grade-planetas">
-                  <button
-                    type="button"
-                    class="card-planeta ativo"
-                    data-planeta="Terra"
-                  >
-                    <img
-                      src="imagens/local/sistemasolar/sistemasolarlocalplanetaterra.png"
-                      alt="Planeta Terra"
-                    />
+                  <button type="button" class="card-planeta" data-planeta="Terra">
+                    <img src="imagens/local/sistemasolar/sistemasolarlocalplanetaterra.png" alt="Planeta Terra">
                     <span>Terra</span>
                   </button>
 
-                  <button
-                    type="button"
-                    class="card-planeta"
-                    data-planeta="Nave Mãe"
-                  >
-                    <img
-                      src="imagens/local/sistemasolar/sistemasolarlocalnavemae.png"
-                      alt="Nave Mãe"
-                    />
+                  <button type="button" class="card-planeta ativo" data-planeta="Nave Mãe">
+                    <img src="imagens/local/sistemasolar/sistemasolarlocalnavemae.png" alt="Nave Mãe">
                     <span>Nave Mãe</span>
                   </button>
 
-                  <button
-                    type="button"
-                    class="card-planeta"
-                    data-planeta="Marte"
-                  >
-                    <img
-                      src="imagens/local/sistemasolar/sistemasolarlocalplanetamarte.png"
-                      alt="Planeta Marte"
-                    />
+                  <button type="button" class="card-planeta" data-planeta="Marte">
+                    <img src="imagens/local/sistemasolar/sistemasolarlocalplanetamarte.png" alt="Planeta Marte">
                     <span>Marte</span>
                   </button>
                 </div>
@@ -422,27 +402,23 @@
             <div class="planeta-layout">
               <aside class="planeta-lateral">
                 <div class="planeta-imagem-box">
-                  <img
-                    id="imagemPlanetaDetalhes"
-                    src="imagens/local/sistemasolar/sistemasolarlocalplanetaterradentro.png"
-                    alt="Superfície do Planeta Terra"
-                  />
+                  <img id="imagemPlanetaDetalhes" src="imagens/local/sistemasolar/sistemasolarlocalnavemaedentro.png" alt="Superfície do Planeta Nave Mãe">
                 </div>
 
                 <div class="planeta-informacoes">
                   <div class="planeta-info-linha">
                     <span>Temperatura média</span>
-                    <strong id="planetaTemperatura">15 °C</strong>
+                    <strong id="planetaTemperatura">22 °C</strong>
                   </div>
 
                   <div class="planeta-info-linha">
                     <span>Clima</span>
-                    <strong id="planetaClima">Variado</strong>
+                    <strong id="planetaClima">Controlado</strong>
                   </div>
 
                   <div class="planeta-info-linha">
                     <span>Atmosfera</span>
-                    <strong id="planetaAtmosfera">Nitrogênio e oxigênio</strong>
+                    <strong id="planetaAtmosfera">Artificial</strong>
                   </div>
 
                   <div class="planeta-info-linha">
@@ -452,7 +428,7 @@
 
                   <div class="planeta-info-linha">
                     <span>Condição</span>
-                    <strong id="planetaCondicao">Habitável</strong>
+                    <strong id="planetaCondicao">Estação segura</strong>
                   </div>
                 </div>
               </aside>
@@ -460,9 +436,40 @@
               <div class="divisoria-planeta" aria-hidden="true"></div>
 
               <section class="planeta-conteudo">
-                <h1 class="titulo-planeta-detalhes" id="tituloPlanetaDetalhes">
-                  Planeta Terra
-                </h1>
+                <h1 class="titulo-planeta-detalhes" id="tituloPlanetaDetalhes">Planeta Terra</h1>
+
+                <section class="painel-local-viajando" id="painelLocalViajando" hidden="">
+                  <span class="local-viajando-etiqueta">VIAGEM EM ANDAMENTO</span>
+                  <h2 id="tituloLocalViajando">Aguarde, viajando no momento</h2>
+                  <p id="textoLocalViajando">A Pioneira está em rota.</p>
+
+                  <div class="local-viajando-tempo">
+                    <span>Tempo restante</span>
+                    <strong id="tempoLocalViajando">10min</strong>
+                  </div>
+
+                  <div class="barras-estado-nave local-viajando-barras">
+                    <div class="estado-nave">
+                      <div class="estado-nave-topo">
+                        <span>Xenônio-9</span>
+                        <strong id="combustivelLocalViajandoTexto">80 / 80</strong>
+                      </div>
+                      <div class="estado-nave-barra">
+                        <div class="estado-nave-preenchimento combustivel" id="combustivelLocalViajandoBarra" style="width: 100%;"></div>
+                      </div>
+                    </div>
+
+                    <div class="estado-nave">
+                      <div class="estado-nave-topo">
+                        <span>Integridade</span>
+                        <strong id="usoLocalViajandoTexto">100 / 100</strong>
+                      </div>
+                      <div class="estado-nave-barra">
+                        <div class="estado-nave-preenchimento uso" id="usoLocalViajandoBarra" style="width: 100%;"></div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
 
                 <div class="acoes-planeta" id="conteudoPlanetaNormal">
                   <section class="coluna-planeta mineracao-coluna">
@@ -470,58 +477,38 @@
 
                     <div class="grade-eventos-planeta">
                       <article class="evento-mineracao" id="eventoMineracaoOuro">
-                        <img
-                          class="imagem-evento-mineracao"
-                          src="imagens/mineracao/mineracaoouro.png"
-                          alt="Mineração de ouro"
-                        />
+                        <img class="imagem-evento-mineracao" src="imagens/mineracao/eventos/mineracaoouro.png" alt="Mineração de ouro">
 
                         <div class="evento-mineracao-info">
                           <h3>Mineração de Minério de Ouro</h3>
                         </div>
 
-                        <div class="mineracao-progresso" hidden>
+                        <div class="mineracao-progresso" hidden="">
                           <div class="mineracao-status">
                             <span id="textoMineracao">Pronto para minerar</span>
-                            <strong id="tempoMineracao">10s</strong>
+                            <strong id="tempoMineracao">10min</strong>
                           </div>
 
                           <div class="barra-mineracao">
-                            <div
-                              class="barra-mineracao-preenchida"
-                              id="barraMineracaoPreenchida"
-                            ></div>
+                            <div class="barra-mineracao-preenchida" id="barraMineracaoPreenchida"></div>
                           </div>
                         </div>
 
-                        <button type="button" class="botao-minerar" id="botaoMinerar" data-mineracao="ouro">
-                          Minerar
-                        </button>
+                        <button type="button" class="botao-minerar" id="botaoMinerar" data-mineracao="ouro">Minerar</button>
 
-                        <button
-                          type="button"
-                          class="botao-coletar-ouro"
-                          id="botaoColetarOuro"
-                          hidden
-                        >
+                        <button type="button" class="botao-coletar-ouro" id="botaoColetarOuro" hidden="">
                           Coletar 10 minério de ouro
                         </button>
                       </article>
 
                       <article class="evento-mineracao" id="eventoMineracaoCobre">
-                        <img
-                          class="imagem-evento-mineracao"
-                          src="imagens/mineracao/mineracaocobre.png"
-                          alt="Mineração de cobre"
-                        />
+                        <img class="imagem-evento-mineracao" src="imagens/mineracao/eventos/mineracaocobre.png" alt="Mineração de cobre">
 
                         <div class="evento-mineracao-info">
                           <h3>Mineração de Minério de Cobre</h3>
                         </div>
 
-                        <button type="button" class="botao-minerar" data-mineracao="cobre">
-                          Minerar
-                        </button>
+                        <button type="button" class="botao-minerar" data-mineracao="cobre">Minerar</button>
                       </article>
                     </div>
                   </section>
@@ -533,7 +520,7 @@
                   </section>
                 </div>
 
-                <section class="painel-nave-mae" id="painelNaveMae" hidden>
+                <section class="painel-nave-mae" id="painelNaveMae" hidden="">
                   <div class="nave-mae-coluna">
                     <h2>Mercado da Nave Mãe</h2>
                     <p class="nave-mae-ajuda">Venda</p>
@@ -597,11 +584,7 @@
                     </div>
 
                     <div class="tripulante-card">
-                      <img
-                        id="imagemCapitaoTripulacao"
-                        src="imagens/personagens/lian.png"
-                        alt="Lian"
-                      />
+                      <img id="imagemCapitaoTripulacao" src="imagens/personagens/lian.png" alt="Lian">
                       <div>
                         <h2 id="nomeCapitaoTripulacao">Lian</h2>
                         <p>Personagem equipado</p>
@@ -631,7 +614,7 @@
                       </div>
                     </div>
 
-                    <button type="button" class="slot-arma" disabled>
+                    <button type="button" class="slot-arma" disabled="">
                       <span>Arma</span>
                       <strong>Bloqueada</strong>
                       <small>Poder 0</small>
@@ -647,79 +630,106 @@
               <aside class="fabrica-lateral">
                 <h1>Fábrica</h1>
 
-                <button
-                  type="button"
-                  class="item-minerio-fabrica ativo"
-                  data-receita="barra-ouro"
-                >
-                  <img src="imagens/mineracao/mineriodeouro.png" alt="Minério de ouro" />
-                  <span>Minério de Ouro</span>
-                  <strong id="quantidadeMinerioFabrica">0</strong>
-                </button>
+                <div class="energia-fabrica energia-fabrica-lateral">
+                  <div class="fabrica-status">
+                    <span>Energia</span>
+                    <strong id="energiaFabricaTexto">100 / 100</strong>
+                  </div>
+
+                  <div class="barra-energia-fabrica">
+                    <div id="barraEnergiaFabrica" style="width: 100%;"></div>
+                  </div>
+                </div>
+
+                <div class="fabrica-menu">
+                  <button type="button" class="fabrica-categoria ativo" data-fabrica-categoria="minerios">
+                    Minérios
+                  </button>
+
+                  <button type="button" class="fabrica-categoria" data-fabrica-categoria="armas">
+                    Armas
+                  </button>
+                </div>
               </aside>
 
               <div class="divisoria-fabrica" aria-hidden="true"></div>
 
               <section class="fabrica-conteudo">
-                <h2>Barra de Ouro</h2>
+                <div class="fabrica-painel" id="fabricaPainelMinerios">
+                  <h2>Minérios</h2>
 
-                <article class="receita-fabrica">
-                  <img
-                    id="imagemResultadoFabrica"
-                    src="imagens/mineracao/barradeouro.png"
-                    alt="Barra de ouro"
-                  />
+                  <div class="receitas-fabrica" id="receitasFabrica">
+                    <article class="receita-fabrica" data-receita="barra_ouro">
+                      <img src="imagens/mineracao/barras/barradeouro.png" alt="Barra de ouro">
 
-                  <div class="receita-fabrica-info">
-                    <h3>Fundir minério</h3>
-                    <p>10 minérios de ouro geram 1 barra de ouro.</p>
-                    <p>Tempo: 10 segundos</p>
-                    <p>Venda no mercado: 20 créditos</p>
+                      <div class="receita-fabrica-info">
+                        <h3>Barra de Ouro</h3>
+                        <p>10 minérios de ouro geram 1 barra de ouro.</p>
+                        <p>Tempo: 10 minutos</p>
+                        <p>Venda no mercado: 20 créditos</p>
+                        <p class="estoque-receita" data-estoque="minerio_ouro">Minérios: 0</p>
+                      </div>
+
+                      <div class="fabricacao-progresso">
+                        <div class="fabrica-status">
+                          <span data-status-receita="barra_ouro">Pronto para fabricar</span>
+                          <strong data-tempo-receita="barra_ouro">10min</strong>
+                        </div>
+
+                        <div class="barra-fabricacao">
+                          <div data-barra-receita="barra_ouro" style="width: 0%;"></div>
+                        </div>
+                      </div>
+
+                      <button type="button" class="botao-fabricar" data-iniciar-receita="barra_ouro">Fabricar</button>
+
+                      <button type="button" class="botao-coletar-fabricacao" data-coletar-receita="barra_ouro" hidden="">
+                        Coletar barra de ouro
+                      </button>
+                    </article>
+
+                    <article class="receita-fabrica" data-receita="barra_cobre">
+                      <img src="imagens/mineracao/barras/barradecobre.png" alt="Barra de cobre">
+
+                      <div class="receita-fabrica-info">
+                        <h3>Barra de Cobre</h3>
+                        <p>10 minérios de cobre geram 1 barra de cobre.</p>
+                        <p>Tempo: 10 minutos</p>
+                        <p class="estoque-receita" data-estoque="minerio_cobre">Minérios: 0</p>
+                      </div>
+
+                      <div class="fabricacao-progresso">
+                        <div class="fabrica-status">
+                          <span data-status-receita="barra_cobre">Pronto para fabricar</span>
+                          <strong data-tempo-receita="barra_cobre">10min</strong>
+                        </div>
+
+                        <div class="barra-fabricacao">
+                          <div data-barra-receita="barra_cobre" style="width: 0%;"></div>
+                        </div>
+                      </div>
+
+                      <button type="button" class="botao-fabricar" data-iniciar-receita="barra_cobre">Fabricar</button>
+
+                      <button type="button" class="botao-coletar-fabricacao" data-coletar-receita="barra_cobre" hidden="">
+                        Coletar barra de cobre
+                      </button>
+                    </article>
                   </div>
+                </div>
 
-                  <div class="energia-fabrica">
-                    <div class="fabrica-status">
-                      <span>Energia</span>
-                      <strong id="energiaFabricaTexto">100 / 100</strong>
-                    </div>
-
-                    <div class="barra-energia-fabrica">
-                      <div id="barraEnergiaFabrica" style="width: 100%;"></div>
-                    </div>
-                  </div>
-
-                  <div class="fabricacao-progresso">
-                    <div class="fabrica-status">
-                      <span id="textoFabricacao">Pronto para fabricar</span>
-                      <strong id="tempoFabricacao">10s</strong>
-                    </div>
-
-                    <div class="barra-fabricacao">
-                      <div id="barraFabricacaoPreenchida"></div>
-                    </div>
-                  </div>
-
-                  <button type="button" class="botao-fabricar" id="botaoFabricarBarra">
-                    Fabricar
-                  </button>
-
-                  <button
-                    type="button"
-                    class="botao-coletar-fabricacao"
-                    id="botaoColetarFabricacao"
-                    hidden
-                  >
-                    Coletar barra de ouro
-                  </button>
-                </article>
+                <div class="fabrica-painel fabrica-painel-armas" id="fabricaPainelArmas" hidden="">
+                  <h2>Armas</h2>
+                  <p>Em construção</p>
+                </div>
               </section>
             </div>
           </section>
         </div>
       </section>
-        </div>
+
       </section>
-    </section>
+
   </main>
 
   <div class="modal-nome ativo" id="modalNome">
@@ -728,7 +738,7 @@
       <p>Escolha o nome de usuário para começar.</p>
 
       <form class="form-nome" id="formNome">
-        <input type="text" id="inputNome" maxlength="20" placeholder="Digite seu nome" required />
+        <input type="text" id="inputNome" maxlength="20" placeholder="Digite seu nome" required="">
         <button type="submit">Criar conta</button>
       </form>
     </div>
@@ -742,12 +752,7 @@
           <h2 id="tituloModalAvatar">Selecionar imagem do perfil</h2>
         </div>
 
-        <button
-          type="button"
-          class="fechar-modal-avatar"
-          id="fecharModalAvatar"
-          aria-label="Fechar seleção de avatar"
-        >
+        <button type="button" class="fechar-modal-avatar" id="fecharModalAvatar" aria-label="Fechar seleção de avatar">
           ✕
         </button>
       </div>
@@ -757,46 +762,30 @@
       </p>
 
       <div class="grade-avatares">
-        <button
-          type="button"
-          class="opcao-avatar"
-          data-avatar="imagens/personagens/lian.png"
-        >
+        <button type="button" class="opcao-avatar ativo" data-avatar="imagens/personagens/lian.png">
           <div class="avatar-miniatura">
-            <img src="imagens/personagens/lian.png" alt="Perfil Lian" />
+            <img src="imagens/personagens/lian.png" alt="Perfil Lian">
           </div>
           <span>Lian</span>
         </button>
 
-        <button
-          type="button"
-          class="opcao-avatar"
-          data-avatar="imagens/personagens/lian2.png"
-        >
+        <button type="button" class="opcao-avatar" data-avatar="imagens/personagens/lian2.png">
           <div class="avatar-miniatura">
-            <img src="imagens/personagens/lian2.png" alt="Perfil 2" />
+            <img src="imagens/personagens/lian2.png" alt="Perfil 2">
           </div>
           <span>Perfil 2</span>
         </button>
 
-        <button
-          type="button"
-          class="opcao-avatar"
-          data-avatar="imagens/personagens/lian3.png"
-        >
+        <button type="button" class="opcao-avatar" data-avatar="imagens/personagens/lian3.png">
           <div class="avatar-miniatura">
-            <img src="imagens/personagens/lian3.png" alt="Perfil 3" />
+            <img src="imagens/personagens/lian3.png" alt="Perfil 3">
           </div>
           <span>Perfil 3</span>
         </button>
 
-        <button
-          type="button"
-          class="opcao-avatar"
-          data-avatar="imagens/personagens/lian4.png"
-        >
+        <button type="button" class="opcao-avatar" data-avatar="imagens/personagens/lian4.png">
           <div class="avatar-miniatura">
-            <img src="imagens/personagens/lian4.png" alt="Perfil 4" />
+            <img src="imagens/personagens/lian4.png" alt="Perfil 4">
           </div>
           <span>Perfil 4</span>
         </button>
@@ -808,23 +797,23 @@
   <div class="modal-viagem" id="modalViagem" aria-hidden="true">
     <div class="modal-viagem-caixa">
       <span class="modal-viagem-subtitulo">ROTA INTERPLANETÁRIA</span>
-      <h2 id="tituloModalViagem">Viajar para Marte?</h2>
-      <p id="descricaoModalViagem">A viagem até Marte demora 8 segundos.</p>
+      <h2 id="tituloModalViagem">Viajar para Terra?</h2>
+      <p id="descricaoModalViagem">A viagem de Nave Mãe até Terra demora 10 minutos.</p>
 
       <div class="resumo-viagem">
         <div class="resumo-viagem-linha">
           <span>Tempo estimado</span>
-          <strong id="resumoTempoViagem">8 segundos</strong>
+          <strong id="resumoTempoViagem">10 minutos</strong>
         </div>
 
         <div class="resumo-viagem-linha">
           <span>Consumo de Xenônio-9</span>
-          <strong id="resumoCombustivelViagem">8 unidades</strong>
+          <strong id="resumoCombustivelViagem">10 unidades</strong>
         </div>
 
         <div class="resumo-viagem-linha">
           <span>Desgaste da nave</span>
-          <strong id="resumoUsoViagem">4 pontos</strong>
+          <strong id="resumoUsoViagem">5 pontos</strong>
         </div>
       </div>
 
@@ -845,14 +834,10 @@
       <h2 id="tituloModalMineracao">Mineração</h2>
 
       <div class="modal-mineracao-corpo">
-        <img
-          id="imagemModalMineracao"
-          src="imagens/mineracao/mineracaoouro.png"
-          alt="Evento de mineração"
-        />
+        <img id="imagemModalMineracao" src="imagens/mineracao/eventos/mineracaoouro.png" alt="Evento de mineração">
 
         <div class="modal-mineracao-info">
-          <p id="tempoModalMineracao">Tempo: 10 segundos</p>
+          <p id="tempoModalMineracao">Tempo: 10 minutos</p>
           <p id="requisitoModalMineracao">Requisito: 10 poder</p>
           <p id="recompensaModalMineracao">Recompensa: 10 minério de ouro + 1 XP</p>
         </div>
@@ -861,7 +846,7 @@
       <div class="modal-mineracao-progresso">
         <div class="modal-mineracao-status">
           <span id="textoModalMineracao">Aguardando início</span>
-          <strong id="tempoRestanteModalMineracao">10s</strong>
+          <strong id="tempoRestanteModalMineracao">10min</strong>
         </div>
 
         <div class="barra-modal-mineracao">
@@ -873,12 +858,11 @@
         Minerar
       </button>
 
-      <button
-        type="button"
-        class="botao-coletar-modal-mineracao"
-        id="coletarModalMineracao"
-        hidden
-      >
+      <button type="button" class="botao-sair-modal-mineracao" id="sairModalMineracao">
+        Sair
+      </button>
+
+      <button type="button" class="botao-coletar-modal-mineracao" id="coletarModalMineracao" hidden="">
         Coletar recompensa
       </button>
     </div>
@@ -893,14 +877,7 @@
 
       <label class="controle-venda-quantidade" for="inputQuantidadeVenda">
         <span>Quantidade</span>
-        <input
-          type="number"
-          id="inputQuantidadeVenda"
-          min="1"
-          step="1"
-          value="1"
-          inputmode="numeric"
-        />
+        <input type="number" id="inputQuantidadeVenda" min="1" step="1" value="1" inputmode="numeric">
       </label>
 
       <div class="modal-venda-acoes">
@@ -911,5 +888,6 @@
   </div>
 
   <script src="script.js"></script>
-</body>
-</html>
+
+
+</body><div id="codex-browser-sidebar-comments-root" style="position: fixed; inset: 0px; pointer-events: none; z-index: 2147483000;"></div></html>

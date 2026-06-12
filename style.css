@@ -624,6 +624,11 @@ input {
   object-fit: cover;
 }
 
+.avatar-capitao-fixo {
+  cursor: default;
+  pointer-events: none;
+}
+
 .opcao-avatar > span {
   padding-bottom: 2px;
   color: #ffffff;
@@ -2105,6 +2110,154 @@ body.modal-aberto {
   font-weight: 600;
 }
 
+.botao-reset-conta {
+  position: absolute;
+  top: 44px;
+  right: 0;
+  min-width: 150px;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid rgba(240,104,104,0.34);
+  border-radius: 9px;
+  background:
+    linear-gradient(180deg, rgba(240,104,104,0.12), rgba(0,0,0,0.03)),
+    #20262d;
+  color: #ffd4d4;
+  font-family: var(--fonte-jogo);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+/* ===== ABA MISSOES ===== */
+
+.aba-missoes {
+  width: 116px;
+}
+
+.missoes-layout {
+  display: grid;
+  grid-template-columns: 330px 2px 1fr;
+  gap: 28px;
+  height: 100%;
+  padding: 12px 22px 14px;
+}
+
+.missoes-lateral {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ia-missoes-retrato {
+  width: 250px;
+  height: 300px;
+  padding: 4px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, var(--divisoria-topo), var(--divisoria-base));
+}
+
+.ia-missoes-retrato img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  object-fit: cover;
+  background: #111922;
+}
+
+.missoes-lateral h1 {
+  margin: 14px 0 12px;
+  color: #ffffff;
+  font-family: var(--fonte-jogo);
+  font-size: 21px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.missoes-resumo {
+  width: 100%;
+  min-height: 54px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 0 13px;
+  border: 1px solid rgba(142,183,196,0.22);
+  border-radius: 10px;
+  background: #182029;
+}
+
+.missoes-resumo span,
+.missao-etiqueta,
+.missao-objetivo {
+  color: var(--texto-fraco);
+  font-family: var(--fonte-jogo);
+  font-size: 12px;
+}
+
+.missoes-resumo strong {
+  color: #d6f2ff;
+  font-family: var(--fonte-jogo);
+  font-size: 18px;
+}
+
+.divisoria-missoes {
+  width: 2px;
+  height: 100%;
+  background: linear-gradient(180deg, var(--divisoria-topo), var(--divisoria-base));
+}
+
+.missoes-conteudo {
+  min-width: 0;
+  height: 100%;
+  display: grid;
+  align-items: center;
+}
+
+.missao-card {
+  max-width: 760px;
+  padding: 24px;
+  border: 1px solid rgba(255,255,255,0.075);
+  border-radius: 12px;
+  background:
+    linear-gradient(145deg, rgba(142,183,196,0.06), rgba(0,0,0,0.04)),
+    #182029;
+}
+
+.missao-etiqueta {
+  display: inline-block;
+  margin-bottom: 12px;
+  color: var(--azul-suave);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.missao-card h2 {
+  margin-bottom: 14px;
+  color: #ffffff;
+  font-family: var(--fonte-jogo);
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.missao-card p {
+  color: var(--texto-fraco);
+  font-family: var(--fonte-jogo);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.missao-objetivo {
+  margin-top: 18px;
+  padding: 14px;
+  border: 1px solid rgba(209,164,52,0.24);
+  border-radius: 10px;
+  background: rgba(209,164,52,0.06);
+  color: #f1d173;
+  line-height: 1.5;
+}
+
 /* Nave um pouco mais baixa dentro da imagem */
 .nave-equipada-card img {
   object-position: center 72%;
@@ -2721,6 +2874,7 @@ body.modal-mineracao-travada {
 }
 
 .botao-iniciar-modal-mineracao,
+.botao-sair-modal-mineracao,
 .botao-coletar-modal-mineracao {
   width: 100%;
   height: 44px;
@@ -2742,7 +2896,13 @@ body.modal-mineracao-travada {
   background: linear-gradient(180deg, #4eaa70, #34784e);
 }
 
-.botao-iniciar-modal-mineracao:disabled {
+.botao-sair-modal-mineracao {
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.035);
+}
+
+.botao-iniciar-modal-mineracao:disabled,
+.botao-sair-modal-mineracao:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
@@ -3204,21 +3364,267 @@ input {
   color: #ffffff;
 }
 
+.energia-fabrica-lateral {
+  width: 100%;
+  margin-bottom: 16px;
+  padding: 13px;
+  border: 1px solid rgba(142,183,196,0.20);
+  border-radius: 10px;
+  background: #182029;
+}
+
+.fabrica-menu {
+  display: grid;
+  gap: 10px;
+}
+
+.fabrica-categoria {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid rgba(255,255,255,0.075);
+  border-radius: 10px;
+  background: #182029;
+  color: var(--texto-fraco);
+  font-family: var(--fonte-jogo);
+  font-size: 13px;
+  text-align: left;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.fabrica-categoria.ativo {
+  border-color: rgba(209,164,52,0.34);
+  color: #ffffff;
+  background:
+    linear-gradient(180deg, rgba(209,164,52,0.10), rgba(0,0,0,0.03)),
+    #20262d;
+}
+
+.fabrica-painel {
+  min-width: 0;
+  height: 100%;
+}
+
+.receitas-fabrica {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(260px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.receitas-fabrica .receita-fabrica {
+  grid-template-columns: 140px minmax(0, 1fr);
+  gap: 16px;
+}
+
+.receitas-fabrica .receita-fabrica > img {
+  width: 140px;
+  height: 140px;
+}
+
+.estoque-receita {
+  color: #d6f2ff !important;
+}
+
+.fabrica-painel-armas {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  min-height: 100%;
+  text-align: center;
+}
+
+.fabrica-painel-armas p {
+  color: var(--texto-fraco);
+  font-family: var(--fonte-jogo);
+  font-size: 18px;
+}
+
 @media (max-width: 980px) {
   .tripulacao-layout,
-  .fabrica-layout {
+  .fabrica-layout,
+  .missoes-layout {
     grid-template-columns: 1fr;
     gap: 16px;
     overflow-y: auto;
   }
 
   .divisoria-tripulacao,
-  .divisoria-fabrica {
+  .divisoria-fabrica,
+  .divisoria-missoes {
     display: none;
   }
 
   .assentos-tripulacao,
-  .receita-fabrica {
+  .receita-fabrica,
+  .receitas-fabrica {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ===== VIAGEM NA ABA LOCAL ===== */
+
+.painel-local-viajando {
+  display: grid;
+  gap: 16px;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 22px;
+  border: 1px solid rgba(142,183,196,0.22);
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(142,183,196,0.10), transparent 40%),
+    #182029;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.018);
+}
+
+.local-viajando-etiqueta {
+  color: var(--azul-suave);
+  font-family: var(--fonte-jogo);
+  font-size: 12px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+.painel-local-viajando h2 {
+  color: #ffffff;
+  font-family: var(--fonte-jogo);
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.painel-local-viajando p {
+  color: var(--texto-fraco);
+  font-family: var(--fonte-jogo);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.local-viajando-tempo {
+  min-height: 54px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 0 14px;
+  border: 1px solid rgba(209,164,52,0.24);
+  border-radius: 10px;
+  background: rgba(209,164,52,0.06);
+}
+
+.local-viajando-tempo span,
+.local-viajando-tempo strong {
+  font-family: var(--fonte-jogo);
+}
+
+.local-viajando-tempo span {
+  color: var(--texto-fraco);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.local-viajando-tempo strong {
+  color: #f1d173;
+  font-size: 18px;
+}
+
+.local-viajando-barras {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+/* ===== ANIMACAO DE IMPULSO DA VIAGEM ===== */
+
+.planeta-box.viajando img {
+  transform-origin: 50% 50%;
+  animation: impulsoImagemViagem 1.8s ease-in-out infinite;
+  filter: brightness(1.12) contrast(1.08);
+}
+
+.planeta-box.viajando .efeito-viagem {
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,0.16) 0 3%, transparent 4% 18%, rgba(255,255,255,0.08) 28%, transparent 58%),
+    radial-gradient(circle at 50% 50%, transparent 0 24%, rgba(91,178,255,0.10) 45%, rgba(255,255,255,0.10) 76%, rgba(5,9,16,0.36) 100%);
+}
+
+.planeta-box.viajando .efeito-viagem::before,
+.planeta-box.viajando .efeito-viagem::after {
+  inset: -42%;
+  background:
+    repeating-conic-gradient(
+      from 0deg,
+      transparent 0deg 8deg,
+      rgba(255,255,255,0.52) 9deg 9.7deg,
+      transparent 10.5deg 17deg
+    );
+  mask-image: radial-gradient(circle, transparent 0 14%, #000 28% 100%);
+  -webkit-mask-image: radial-gradient(circle, transparent 0 14%, #000 28% 100%);
+  animation: tunelAvancoViagem 1.15s linear infinite;
+}
+
+.planeta-box.viajando .efeito-viagem::after {
+  opacity: 0.38;
+  animation-duration: 1.55s;
+  animation-direction: reverse;
+}
+
+.planeta-box.viajando .efeito-viagem span {
+  width: 4px;
+  height: 54%;
+  margin-left: -2px;
+  margin-top: -27%;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(255,255,255,0.96),
+    rgba(126,202,255,0.70),
+    transparent
+  );
+  animation: rastroImpulsoViagem 0.95s linear infinite;
+}
+
+@keyframes impulsoImagemViagem {
+  0%,
+  100% {
+    transform: scale(1.02) translateY(0);
+  }
+
+  45% {
+    transform: scale(1.10) translateY(-2px);
+  }
+}
+
+@keyframes tunelAvancoViagem {
+  0% {
+    transform: scale(0.46) rotate(0deg);
+    opacity: 0.10;
+  }
+
+  32% {
+    opacity: 0.72;
+  }
+
+  100% {
+    transform: scale(1.62) rotate(18deg);
+    opacity: 0.92;
+  }
+}
+
+@keyframes rastroImpulsoViagem {
+  0% {
+    height: 3%;
+    margin-top: -1.5%;
+    opacity: 0;
+  }
+
+  18% {
+    opacity: 0.92;
+  }
+
+  100% {
+    height: 70%;
+    margin-top: -35%;
+    opacity: 0;
   }
 }
