@@ -670,10 +670,50 @@ const slotsInventario = document.querySelectorAll(".slot-inventario");
 
 const CHAVE_INVENTARIO_PIONEIRA = "cronicas_do_vazio_inventario_pioneira";
 const CHAVE_MINERACAO_OURO = "cronicas_do_vazio_mineracao_ouro";
+const MAX_ITENS_POR_SLOT = 10;
 
 let mineracaoEmAndamento = false;
 let ouroProntoParaColeta = false;
 let animacaoMineracao = null;
+
+function normalizarItemInventario(item) {
+  if (!item) return null;
+
+  if (item.id === "ouro") {
+    return {
+      ...item,
+      id: "minerio_ouro",
+      nome: "Minério de Ouro",
+      imagem: "imagens/mineracao/mineriodeouro.png"
+    };
+  }
+
+  return item;
+}
+
+function normalizarPilhasInventario(inventario) {
+  const normalizado = Array(5).fill(null);
+  let proximoSlot = 0;
+
+  inventario.forEach((itemOriginal) => {
+    const item = normalizarItemInventario(itemOriginal);
+    if (!item || proximoSlot >= normalizado.length) return;
+
+    let restante = Math.max(0, Math.floor(Number(item.quantidade) || 0));
+
+    while (restante > 0 && proximoSlot < normalizado.length) {
+      const quantidade = Math.min(MAX_ITENS_POR_SLOT, restante);
+      normalizado[proximoSlot] = {
+        ...item,
+        quantidade
+      };
+      restante -= quantidade;
+      proximoSlot += 1;
+    }
+  });
+
+  return normalizado;
+}
 
 function carregarInventarioPioneira() {
   const salvo = localStorage.getItem(CHAVE_INVENTARIO_PIONEIRA);
@@ -686,20 +726,11 @@ function carregarInventarioPioneira() {
 
   try {
     const inventario = JSON.parse(salvo);
-    return Array.from({ length: 5 }, (_, i) => {
-      const item = inventario[i] || null;
-
-      if (item?.id === "ouro") {
-        return {
-          ...item,
-          id: "minerio_ouro",
-          nome: "Minério de Ouro",
-          imagem: "imagens/mineracao/mineriodeouro.png"
-        };
-      }
-
-      return item;
-    });
+    const normalizado = normalizarPilhasInventario(
+      Array.from({ length: 5 }, (_, i) => inventario[i] || null)
+    );
+    localStorage.setItem(CHAVE_INVENTARIO_PIONEIRA, JSON.stringify(normalizado));
+    return normalizado;
   } catch {
     const vazio = Array(5).fill(null);
     localStorage.setItem(CHAVE_INVENTARIO_PIONEIRA, JSON.stringify(vazio));
@@ -708,7 +739,8 @@ function carregarInventarioPioneira() {
 }
 
 function salvarInventarioPioneira(inventario) {
-  localStorage.setItem(CHAVE_INVENTARIO_PIONEIRA, JSON.stringify(inventario));
+  const normalizado = normalizarPilhasInventario(inventario);
+  localStorage.setItem(CHAVE_INVENTARIO_PIONEIRA, JSON.stringify(normalizado));
   renderizarInventarioPioneira();
 }
 
@@ -753,36 +785,11 @@ function renderizarInventarioPioneira() {
 }
 
 function adicionarOuroAoInventario(quantidade) {
-  const inventario = carregarInventarioPioneira();
-  const slotOuro = inventario.findIndex((item) =>
-    item?.id === "minerio_ouro" || item?.id === "ouro"
-  );
-
-  if (slotOuro >= 0) {
-    inventario[slotOuro].id = "minerio_ouro";
-    inventario[slotOuro].nome = "Minério de Ouro";
-    inventario[slotOuro].imagem = "imagens/mineracao/mineriodeouro.png";
-    inventario[slotOuro].quantidade += quantidade;
-    salvarInventarioPioneira(inventario);
-    return true;
-  }
-
-  const slotLivre = inventario.findIndex((item) => item === null);
-
-  if (slotLivre < 0) {
-    alert("O inventário da Pioneira está cheio.");
-    return false;
-  }
-
-  inventario[slotLivre] = {
+  return adicionarItemAoInventario({
     id: "minerio_ouro",
     nome: "Minério de Ouro",
-    quantidade,
     imagem: "imagens/mineracao/mineriodeouro.png"
-  };
-
-  salvarInventarioPioneira(inventario);
-  return true;
+  }, quantidade);
 }
 
 function atualizarEstadoVisualMineracao() {
@@ -791,48 +798,7 @@ function atualizarEstadoVisualMineracao() {
 }
 
 function iniciarMineracaoOuro() {
-  if (mineracaoEmAndamento || ouroProntoParaColeta) return;
-
-  if (calcularPoderTotal() < 10) {
-    alert("A Pioneira precisa de 10 de poder para iniciar esta mineração.");
-    return;
-  }
-
-  mineracaoEmAndamento = true;
-  atualizarEstadoVisualMineracao();
-
-  const duracao = 10000;
-  const inicio = performance.now();
-
-  textoMineracao.textContent = "Minerando minério";
-  tempoMineracao.textContent = "10s";
-  barraMineracaoPreenchida.style.width = "0%";
-
-  function atualizar(agora) {
-    const decorrido = agora - inicio;
-    const progresso = Math.min(decorrido / duracao, 1);
-    const restante = Math.max(0, Math.ceil((duracao - decorrido) / 1000));
-
-    barraMineracaoPreenchida.style.width = `${progresso * 100}%`;
-    tempoMineracao.textContent = `${restante}s`;
-
-    if (progresso < 1) {
-      animacaoMineracao = requestAnimationFrame(atualizar);
-      return;
-    }
-
-    mineracaoEmAndamento = false;
-    ouroProntoParaColeta = true;
-
-    textoMineracao.textContent = "Mineração concluída";
-    tempoMineracao.textContent = "Pronto";
-    barraMineracaoPreenchida.style.width = "100%";
-
-    localStorage.setItem(CHAVE_MINERACAO_OURO, "pronto");
-    atualizarEstadoVisualMineracao();
-  }
-
-  animacaoMineracao = requestAnimationFrame(atualizar);
+  abrirModalMineracao("ouro");
 }
 
 function coletarOuroMinerado() {
@@ -1120,7 +1086,7 @@ function renderizarInventarioNaveMae() {
 function abrirVendaOuro(quantidade) {
   quantidadeOuroParaVenda = Math.min(1, quantidade);
   textoConfirmacaoVenda.textContent =
-    `Tem certeza de que deseja vender 1 de ouro por 1 crédito? Você possui ${quantidade}.`;
+    `Escolha a quantidade para vender. Você possui ${quantidade}.`;
   modalVenda.classList.add("ativo");
   modalVenda.setAttribute("aria-hidden", "false");
 }
@@ -1411,11 +1377,18 @@ atualizarAbaLocal(localStorage.getItem(CHAVE_PLANETA) || "Terra");
 const CHAVE_XP_JOGADOR = "cronicas_do_vazio_xp_jogador";
 const CHAVE_ENERGIA_FABRICA = "cronicas_do_vazio_energia_fabrica";
 const CHAVE_FABRICACAO_BARRA_OURO = "cronicas_do_vazio_fabricacao_barra_ouro";
+const CHAVE_MINERACAO_PRONTA = "cronicas_do_vazio_mineracao_pronta";
 
 const ITEM_MINERIO_OURO = {
   id: "minerio_ouro",
   nome: "Minério de Ouro",
   imagem: "imagens/mineracao/mineriodeouro.png"
+};
+
+const ITEM_MINERIO_COBRE = {
+  id: "minerio_cobre",
+  nome: "Minério de Cobre",
+  imagem: "imagens/mineracao/mineriodecobre.png"
 };
 
 const ITEM_BARRA_OURO = {
@@ -1454,12 +1427,52 @@ const barraFabricacaoPreenchida = document.getElementById("barraFabricacaoPreenc
 const botaoFabricarBarra = document.getElementById("botaoFabricarBarra");
 const botaoColetarFabricacao = document.getElementById("botaoColetarFabricacao");
 const imagemResultadoFabrica = document.getElementById("imagemResultadoFabrica");
+const modalMineracao = document.getElementById("modalMineracao");
+const tituloModalMineracao = document.getElementById("tituloModalMineracao");
+const imagemModalMineracao = document.getElementById("imagemModalMineracao");
+const tempoModalMineracao = document.getElementById("tempoModalMineracao");
+const requisitoModalMineracao = document.getElementById("requisitoModalMineracao");
+const recompensaModalMineracao = document.getElementById("recompensaModalMineracao");
+const textoModalMineracao = document.getElementById("textoModalMineracao");
+const tempoRestanteModalMineracao = document.getElementById("tempoRestanteModalMineracao");
+const barraModalMineracao = document.getElementById("barraModalMineracao");
+const iniciarModalMineracao = document.getElementById("iniciarModalMineracao");
+const coletarModalMineracao = document.getElementById("coletarModalMineracao");
+const botoesMineracao = document.querySelectorAll(".botao-minerar[data-mineracao]");
 
 let energiaFabrica = carregarEnergiaFabrica();
 let ultimoTickEnergiaFabrica = performance.now();
 let fabricacaoEmAndamento = false;
 let fabricacaoPronta = localStorage.getItem(CHAVE_FABRICACAO_BARRA_OURO) === "pronto";
 let animacaoFabricacao = null;
+let mineracaoSelecionada = null;
+let mineracaoPronta = null;
+
+const MINERACOES = {
+  ouro: {
+    id: "ouro",
+    titulo: "Mineração de Minério de Ouro",
+    imagem: "imagens/mineracao/mineracaoouro.png",
+    tempoSegundos: 10,
+    poderNecessario: 10,
+    recompensaQuantidade: 10,
+    xp: 1,
+    item: ITEM_MINERIO_OURO
+  },
+  cobre: {
+    id: "cobre",
+    titulo: "Mineração de Minério de Cobre",
+    imagem: "imagens/mineracao/mineracaocobre.png",
+    tempoSegundos: 10,
+    poderNecessario: 15,
+    recompensaQuantidade: 10,
+    xp: 1,
+    item: ITEM_MINERIO_COBRE
+  }
+};
+
+mineracaoPronta = carregarMineracaoPronta();
+ouroProntoParaColeta = !!mineracaoPronta;
 
 if (imagemResultadoFabrica) {
   imagemResultadoFabrica.addEventListener("error", () => {
@@ -1550,6 +1563,174 @@ function atualizarXPJogador() {
   if (xpPreenchido) xpPreenchido.style.width = `${xpNivel}%`;
 }
 
+function carregarMineracaoPronta() {
+  const salvo = localStorage.getItem(CHAVE_MINERACAO_PRONTA);
+
+  if (salvo) {
+    try {
+      const dados = JSON.parse(salvo);
+      return MINERACOES[dados.tipo] || null;
+    } catch {
+      localStorage.removeItem(CHAVE_MINERACAO_PRONTA);
+    }
+  }
+
+  if (localStorage.getItem(CHAVE_MINERACAO_OURO) === "pronto") {
+    return MINERACOES.ouro;
+  }
+
+  return null;
+}
+
+function salvarMineracaoPronta(mineracao) {
+  mineracaoPronta = mineracao;
+  ouroProntoParaColeta = !!mineracao;
+
+  if (mineracao) {
+    localStorage.setItem(CHAVE_MINERACAO_PRONTA, JSON.stringify({ tipo: mineracao.id }));
+    localStorage.setItem(CHAVE_MINERACAO_OURO, "pronto");
+  } else {
+    localStorage.removeItem(CHAVE_MINERACAO_PRONTA);
+    localStorage.removeItem(CHAVE_MINERACAO_OURO);
+  }
+
+  atualizarEstadoVisualMineracao();
+}
+
+function podeAdicionarItemAoInventario(itemBase, quantidade) {
+  const inventario = carregarInventarioPioneira();
+  let restante = Math.max(0, Math.floor(Number(quantidade) || 0));
+
+  inventario.forEach((item) => {
+    if (!item || item.id !== itemBase.id || restante <= 0) return;
+    restante -= Math.min(MAX_ITENS_POR_SLOT - item.quantidade, restante);
+  });
+
+  inventario.forEach((item) => {
+    if (item || restante <= 0) return;
+    restante -= Math.min(MAX_ITENS_POR_SLOT, restante);
+  });
+
+  return restante <= 0;
+}
+
+function preencherModalMineracao(mineracao) {
+  if (!mineracao) return;
+
+  if (tituloModalMineracao) tituloModalMineracao.textContent = mineracao.titulo;
+  if (imagemModalMineracao) {
+    imagemModalMineracao.src = mineracao.imagem;
+    imagemModalMineracao.alt = mineracao.titulo;
+  }
+  if (tempoModalMineracao) tempoModalMineracao.textContent = `Tempo: ${mineracao.tempoSegundos} segundos`;
+  if (requisitoModalMineracao) requisitoModalMineracao.textContent = `Requisito: ${mineracao.poderNecessario} poder`;
+  if (recompensaModalMineracao) {
+    recompensaModalMineracao.textContent =
+      `Recompensa: ${mineracao.recompensaQuantidade} ${mineracao.item.nome.toLowerCase()} + ${mineracao.xp} XP`;
+  }
+  if (textoModalMineracao) textoModalMineracao.textContent = "Aguardando início";
+  if (tempoRestanteModalMineracao) tempoRestanteModalMineracao.textContent = `${mineracao.tempoSegundos}s`;
+  if (barraModalMineracao) barraModalMineracao.style.width = "0%";
+  if (iniciarModalMineracao) {
+    iniciarModalMineracao.hidden = !!mineracaoPronta;
+    iniciarModalMineracao.disabled = false;
+  }
+  if (coletarModalMineracao) {
+    coletarModalMineracao.hidden = !mineracaoPronta;
+    coletarModalMineracao.textContent = `Coletar ${mineracao.recompensaQuantidade} ${mineracao.item.nome.toLowerCase()}`;
+  }
+}
+
+function abrirModalMineracao(tipo) {
+  if (mineracaoEmAndamento) return;
+
+  const mineracao = mineracaoPronta || MINERACOES[tipo];
+  if (!mineracao) return;
+
+  if (!mineracaoPronta && calcularPoderTotal() < mineracao.poderNecessario) {
+    alert(`A Pioneira precisa de ${mineracao.poderNecessario} de poder para iniciar esta mineração.`);
+    return;
+  }
+
+  if (!mineracaoPronta && !podeAdicionarItemAoInventario(mineracao.item, mineracao.recompensaQuantidade)) {
+    alert("O inventário da Pioneira não possui espaço para esta recompensa.");
+    return;
+  }
+
+  mineracaoSelecionada = mineracao;
+  preencherModalMineracao(mineracao);
+  modalMineracao?.classList.add("ativo");
+  modalMineracao?.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-mineracao-travada");
+}
+
+function fecharModalMineracao() {
+  modalMineracao?.classList.remove("ativo");
+  modalMineracao?.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("modal-mineracao-travada");
+  mineracaoSelecionada = null;
+}
+
+function iniciarMineracaoSelecionada() {
+  const mineracao = mineracaoSelecionada;
+  if (!mineracao || mineracaoEmAndamento || mineracaoPronta) return;
+
+  if (calcularPoderTotal() < mineracao.poderNecessario) {
+    alert(`A Pioneira precisa de ${mineracao.poderNecessario} de poder para iniciar esta mineração.`);
+    return;
+  }
+
+  mineracaoEmAndamento = true;
+  atualizarEstadoVisualMineracao();
+
+  if (iniciarModalMineracao) iniciarModalMineracao.hidden = true;
+  if (coletarModalMineracao) coletarModalMineracao.hidden = true;
+  if (textoModalMineracao) textoModalMineracao.textContent = "Minerando";
+  if (tempoRestanteModalMineracao) tempoRestanteModalMineracao.textContent = `${mineracao.tempoSegundos}s`;
+  if (barraModalMineracao) barraModalMineracao.style.width = "0%";
+
+  const duracao = mineracao.tempoSegundos * 1000;
+  const inicio = performance.now();
+
+  function atualizar(agora) {
+    const decorrido = agora - inicio;
+    const progresso = Math.min(decorrido / duracao, 1);
+    const restante = Math.max(0, Math.ceil((duracao - decorrido) / 1000));
+
+    if (barraModalMineracao) barraModalMineracao.style.width = `${progresso * 100}%`;
+    if (tempoRestanteModalMineracao) tempoRestanteModalMineracao.textContent = `${restante}s`;
+
+    if (progresso < 1) {
+      animacaoMineracao = requestAnimationFrame(atualizar);
+      return;
+    }
+
+    mineracaoEmAndamento = false;
+    salvarMineracaoPronta(mineracao);
+
+    if (textoModalMineracao) textoModalMineracao.textContent = "Mineração concluída";
+    if (tempoRestanteModalMineracao) tempoRestanteModalMineracao.textContent = "Pronto";
+    if (barraModalMineracao) barraModalMineracao.style.width = "100%";
+    if (coletarModalMineracao) {
+      coletarModalMineracao.hidden = false;
+      coletarModalMineracao.textContent = `Coletar ${mineracao.recompensaQuantidade} ${mineracao.item.nome.toLowerCase()}`;
+    }
+  }
+
+  animacaoMineracao = requestAnimationFrame(atualizar);
+}
+
+function coletarMineracaoSelecionada() {
+  const mineracao = mineracaoPronta || mineracaoSelecionada;
+  if (!mineracao || mineracaoEmAndamento) return;
+
+  if (!adicionarItemAoInventario(mineracao.item, mineracao.recompensaQuantidade)) return;
+
+  adicionarXP(mineracao.xp);
+  salvarMineracaoPronta(null);
+  fecharModalMineracao();
+}
+
 function contarItemInventario(idItem) {
   return carregarInventarioPioneira()
     .filter((item) => item?.id === idItem)
@@ -1558,28 +1739,39 @@ function contarItemInventario(idItem) {
 
 function adicionarItemAoInventario(itemBase, quantidade) {
   const inventario = carregarInventarioPioneira();
-  const indiceExistente = inventario.findIndex((item) => item?.id === itemBase.id);
+  let restante = Math.max(0, Math.floor(Number(quantidade) || 0));
 
-  if (indiceExistente >= 0) {
-    inventario[indiceExistente].quantidade += quantidade;
-    salvarInventarioPioneira(inventario);
-    return true;
+  if (restante <= 0) return true;
+
+  inventario.forEach((item) => {
+    if (!item || item.id !== itemBase.id || restante <= 0) return;
+
+    const espaco = MAX_ITENS_POR_SLOT - item.quantidade;
+    if (espaco <= 0) return;
+
+    const adicionar = Math.min(espaco, restante);
+    item.quantidade += adicionar;
+    restante -= adicionar;
+  });
+
+  while (restante > 0) {
+    const slotLivre = inventario.findIndex((item) => item === null);
+
+    if (slotLivre < 0) {
+      alert("O inventário da Pioneira está cheio.");
+      return false;
+    }
+
+    const adicionar = Math.min(MAX_ITENS_POR_SLOT, restante);
+    inventario[slotLivre] = {
+      id: itemBase.id,
+      nome: itemBase.nome,
+      quantidade: adicionar,
+      imagem: itemBase.imagem,
+      preco: itemBase.preco
+    };
+    restante -= adicionar;
   }
-
-  const slotLivre = inventario.findIndex((item) => item === null);
-
-  if (slotLivre < 0) {
-    alert("O inventário da Pioneira está cheio.");
-    return false;
-  }
-
-  inventario[slotLivre] = {
-    id: itemBase.id,
-    nome: itemBase.nome,
-    quantidade,
-    imagem: itemBase.imagem,
-    preco: itemBase.preco
-  };
 
   salvarInventarioPioneira(inventario);
   return true;
@@ -1754,17 +1946,37 @@ salvarInventarioPioneira = function(inventario) {
 
 const atualizarEstadoVisualMineracaoOriginal = atualizarEstadoVisualMineracao;
 atualizarEstadoVisualMineracao = function() {
-  atualizarEstadoVisualMineracaoOriginal();
+  const poderTotal = calcularPoderTotal();
 
-  if (!botaoMinerar) return;
+  if (botaoColetarOuro) {
+    botaoColetarOuro.hidden = true;
+  }
 
-  const poderSuficiente = calcularPoderTotal() >= 10;
-  botaoMinerar.disabled = !poderSuficiente || mineracaoEmAndamento || ouroProntoParaColeta;
+  botoesMineracao.forEach((botao) => {
+    const mineracao = MINERACOES[botao.dataset.mineracao];
+    if (!mineracao) return;
 
-  if (!poderSuficiente && textoMineracao) {
-    textoMineracao.textContent = "Poder insuficiente";
-  } else if (!mineracaoEmAndamento && !ouroProntoParaColeta && textoMineracao) {
-    textoMineracao.textContent = "Pronto para minerar";
+    botao.hidden = false;
+
+    if (mineracaoPronta) {
+      const ehPendente = mineracaoPronta.id === mineracao.id;
+      botao.disabled = !ehPendente;
+      botao.textContent = ehPendente ? "Coletar" : "Coleta pendente";
+      return;
+    }
+
+    botao.disabled = mineracaoEmAndamento || poderTotal < mineracao.poderNecessario;
+    botao.textContent = "Minerar";
+  });
+
+  if (textoMineracao) {
+    if (mineracaoEmAndamento) {
+      textoMineracao.textContent = "Minerando";
+    } else if (mineracaoPronta) {
+      textoMineracao.textContent = "Coleta pendente";
+    } else {
+      textoMineracao.textContent = "Pronto para minerar";
+    }
   }
 };
 
@@ -1801,6 +2013,21 @@ if (imagemPerfil) {
 
 botaoFabricarBarra?.addEventListener("click", iniciarFabricacaoBarraOuro);
 botaoColetarFabricacao?.addEventListener("click", coletarFabricacaoBarraOuro);
+
+botoesMineracao.forEach((botao) => {
+  if (botao === botaoMinerar) return;
+  botao.addEventListener("click", () => abrirModalMineracao(botao.dataset.mineracao));
+});
+
+iniciarModalMineracao?.addEventListener("click", iniciarMineracaoSelecionada);
+coletarModalMineracao?.addEventListener("click", coletarMineracaoSelecionada);
+
+window.addEventListener("keydown", (evento) => {
+  if (modalMineracao?.classList.contains("ativo") && evento.key === "Escape") {
+    evento.preventDefault();
+    evento.stopPropagation();
+  }
+}, true);
 
 if (fabricacaoPronta) {
   if (textoFabricacao) textoFabricacao.textContent = "Fabricação concluída";

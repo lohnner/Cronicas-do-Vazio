@@ -477,13 +477,10 @@
                         />
 
                         <div class="evento-mineracao-info">
-                  <h3>Mineração de Minério de Ouro</h3>
-                          <p>Tempo: 10 segundos</p>
-                          <p>Requisito: 10 poder</p>
-                          <p>Recompensa: 10 minério de ouro + 1 XP</p>
+                          <h3>Mineração de Minério de Ouro</h3>
                         </div>
 
-                        <div class="mineracao-progresso">
+                        <div class="mineracao-progresso" hidden>
                           <div class="mineracao-status">
                             <span id="textoMineracao">Pronto para minerar</span>
                             <strong id="tempoMineracao">10s</strong>
@@ -497,7 +494,7 @@
                           </div>
                         </div>
 
-                        <button type="button" class="botao-minerar" id="botaoMinerar">
+                        <button type="button" class="botao-minerar" id="botaoMinerar" data-mineracao="ouro">
                           Minerar
                         </button>
 
@@ -508,6 +505,22 @@
                           hidden
                         >
                           Coletar 10 minério de ouro
+                        </button>
+                      </article>
+
+                      <article class="evento-mineracao" id="eventoMineracaoCobre">
+                        <img
+                          class="imagem-evento-mineracao"
+                          src="imagens/mineracao/mineracaocobre.png"
+                          alt="Mineração de cobre"
+                        />
+
+                        <div class="evento-mineracao-info">
+                          <h3>Mineração de Minério de Cobre</h3>
+                        </div>
+
+                        <button type="button" class="botao-minerar" data-mineracao="cobre">
+                          Minerar
                         </button>
                       </article>
                     </div>
@@ -523,9 +536,7 @@
                 <section class="painel-nave-mae" id="painelNaveMae" hidden>
                   <div class="nave-mae-coluna">
                     <h2>Mercado da Nave Mãe</h2>
-                    <p class="nave-mae-ajuda">
-                      Clique no ouro para vender 1 unidade por 1 crédito.
-                    </p>
+                    <p class="nave-mae-ajuda">Venda</p>
                     <div class="inventario-nave-mae" id="inventarioNaveMae"></div>
                   </div>
 
@@ -828,14 +839,57 @@
     </div>
   </div>
 
+  <div class="modal-mineracao" id="modalMineracao" aria-hidden="true">
+    <div class="modal-mineracao-caixa">
+      <span class="modal-mineracao-subtitulo">MISSÃO DE MINERAÇÃO</span>
+      <h2 id="tituloModalMineracao">Mineração</h2>
+
+      <div class="modal-mineracao-corpo">
+        <img
+          id="imagemModalMineracao"
+          src="imagens/mineracao/mineracaoouro.png"
+          alt="Evento de mineração"
+        />
+
+        <div class="modal-mineracao-info">
+          <p id="tempoModalMineracao">Tempo: 10 segundos</p>
+          <p id="requisitoModalMineracao">Requisito: 10 poder</p>
+          <p id="recompensaModalMineracao">Recompensa: 10 minério de ouro + 1 XP</p>
+        </div>
+      </div>
+
+      <div class="modal-mineracao-progresso">
+        <div class="modal-mineracao-status">
+          <span id="textoModalMineracao">Aguardando início</span>
+          <strong id="tempoRestanteModalMineracao">10s</strong>
+        </div>
+
+        <div class="barra-modal-mineracao">
+          <div id="barraModalMineracao"></div>
+        </div>
+      </div>
+
+      <button type="button" class="botao-iniciar-modal-mineracao" id="iniciarModalMineracao">
+        Minerar
+      </button>
+
+      <button
+        type="button"
+        class="botao-coletar-modal-mineracao"
+        id="coletarModalMineracao"
+        hidden
+      >
+        Coletar recompensa
+      </button>
+    </div>
+  </div>
+
 
   <div class="modal-venda" id="modalVenda" aria-hidden="true">
     <div class="modal-venda-caixa">
       <span class="modal-venda-subtitulo">COMÉRCIO DA NAVE MÃE</span>
       <h2 id="tituloModalVenda">Vender ouro?</h2>
-      <p id="textoConfirmacaoVenda">
-        Tem certeza de que deseja vender 1 de ouro por 1 crédito?
-      </p>
+      <p id="textoConfirmacaoVenda">Escolha a quantidade para vender.</p>
 
       <label class="controle-venda-quantidade" for="inputQuantidadeVenda">
         <span>Quantidade</span>
