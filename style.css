@@ -2726,3 +2726,339 @@ input {
   margin-top: 16px;
   padding-top: 14px;
 }
+
+/* ===== PODER, TRIPULACAO E FABRICA ===== */
+.aba-fabrica {
+  width: 112px;
+}
+
+.poder-total-topo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  min-width: 130px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 14px;
+  border: 1px solid rgba(142,183,196,0.26);
+  border-radius: 9px;
+  background:
+    linear-gradient(180deg, rgba(142,183,196,0.08), rgba(0,0,0,0.04)),
+    #20262d;
+}
+
+.poder-total-topo span,
+.tripulacao-resumo span,
+.item-minerio-fabrica span,
+.fabrica-status span {
+  color: var(--texto-fraco);
+  font-family: var(--fonte-jogo);
+  font-size: 12px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.poder-total-topo strong,
+.tripulacao-resumo strong,
+.item-minerio-fabrica strong,
+.fabrica-status strong {
+  color: #d6f2ff;
+  font-family: var(--fonte-jogo);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.tripulacao-layout,
+.fabrica-layout {
+  display: grid;
+  grid-template-columns: 330px 2px 1fr;
+  gap: 28px;
+  height: 100%;
+  padding: 12px 22px 14px;
+}
+
+.tripulacao-lateral,
+.fabrica-lateral {
+  min-height: 0;
+}
+
+.tripulacao-lateral h1,
+.fabrica-lateral h1 {
+  margin-bottom: 16px;
+  color: #ffffff;
+  font-family: var(--fonte-jogo);
+  font-size: 23px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.tripulacao-resumo {
+  min-height: 50px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 0 13px;
+  border: 1px solid rgba(255,255,255,0.075);
+  border-radius: 10px;
+  background: #182029;
+}
+
+.divisoria-tripulacao,
+.divisoria-fabrica {
+  width: 2px;
+  height: 100%;
+  background: linear-gradient(180deg, var(--divisoria-topo), var(--divisoria-base));
+  border-radius: 999px;
+}
+
+.tripulacao-conteudo,
+.fabrica-conteudo {
+  min-width: 0;
+  height: 100%;
+  padding-top: 6px;
+}
+
+.assentos-tripulacao {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.assento-tripulacao,
+.receita-fabrica {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid rgba(255,255,255,0.075);
+  border-radius: 12px;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,0.025), rgba(0,0,0,0.05)),
+    #182029;
+}
+
+.assento-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.assento-topo span,
+.tripulante-card p,
+.slot-arma span,
+.slot-arma small,
+.receita-fabrica-info p {
+  color: var(--texto-fraco);
+  font-family: var(--fonte-jogo);
+  font-size: 12px;
+}
+
+.assento-topo strong,
+.tripulante-card h2,
+.receita-fabrica-info h3 {
+  color: #ffffff;
+  font-family: var(--fonte-jogo);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.tripulante-card {
+  display: grid;
+  grid-template-columns: 82px 1fr;
+  align-items: center;
+  gap: 14px;
+  min-height: 104px;
+}
+
+.tripulante-card img,
+.tripulante-placeholder {
+  width: 82px;
+  height: 104px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  background: #111922;
+  object-fit: cover;
+}
+
+.tripulante-placeholder {
+  display: grid;
+  place-items: center;
+  color: var(--azul-suave);
+  font-size: 30px;
+}
+
+.tripulante-card strong {
+  display: block;
+  margin-top: 8px;
+  color: #f1d173;
+  font-family: var(--fonte-jogo);
+  font-size: 13px;
+}
+
+.slot-arma {
+  width: 100%;
+  min-height: 58px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 6px 12px;
+  margin-top: 16px;
+  padding: 10px 12px;
+  border: 1px dashed rgba(142,183,196,0.26);
+  border-radius: 10px;
+  background: rgba(10,16,23,0.22);
+  color: #ffffff;
+  font-family: var(--fonte-jogo);
+}
+
+.slot-arma strong {
+  color: #ffffff;
+  font-size: 13px;
+}
+
+.slot-arma small {
+  grid-column: 1 / -1;
+}
+
+.fabrica-conteudo h2 {
+  margin-bottom: 18px;
+  color: #ffffff;
+  font-family: var(--fonte-jogo);
+  font-size: 32px;
+  font-weight: 500;
+  letter-spacing: 1.4px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.item-minerio-fabrica {
+  width: 100%;
+  min-height: 74px;
+  display: grid;
+  grid-template-columns: 54px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 9px;
+  border: 1px solid rgba(255,255,255,0.075);
+  border-radius: 10px;
+  background: #182029;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.item-minerio-fabrica img {
+  width: 54px;
+  height: 54px;
+  object-fit: contain;
+}
+
+.receita-fabrica {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.receita-fabrica > img {
+  width: 180px;
+  height: 180px;
+  object-fit: contain;
+  border-radius: 10px;
+  background: rgba(10,15,20,0.45);
+}
+
+.receita-fabrica-info p {
+  margin-top: 7px;
+}
+
+.energia-fabrica,
+.fabricacao-progresso {
+  grid-column: 1 / -1;
+}
+
+.fabrica-status {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 7px;
+}
+
+.barra-energia-fabrica,
+.barra-fabricacao {
+  width: 100%;
+  height: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(142,183,196,0.28);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.025);
+  box-shadow: inset 0 0 8px rgba(0,0,0,0.28);
+}
+
+.barra-energia-fabrica > div {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #3f8fdf, #8edfff);
+  box-shadow: 0 0 10px rgba(79,153,255,0.30);
+}
+
+.barra-fabricacao > div {
+  width: 0%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8b6a20, #d1a434, #f2d270);
+  box-shadow: 0 0 10px rgba(209,164,52,0.30);
+}
+
+.botao-fabricar,
+.botao-coletar-fabricacao {
+  grid-column: 1 / -1;
+  width: 100%;
+  height: 42px;
+  border-radius: 10px;
+  font-family: var(--fonte-jogo);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.botao-fabricar {
+  border: 1px solid rgba(209,164,52,0.35);
+  background: linear-gradient(180deg, #b28a2d, #84651f);
+  color: #ffffff;
+}
+
+.botao-fabricar:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.botao-coletar-fabricacao {
+  border: 1px solid rgba(115,205,145,0.35);
+  background: linear-gradient(180deg, #4eaa70, #34784e);
+  color: #ffffff;
+}
+
+@media (max-width: 980px) {
+  .tripulacao-layout,
+  .fabrica-layout {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    overflow-y: auto;
+  }
+
+  .divisoria-tripulacao,
+  .divisoria-fabrica {
+    display: none;
+  }
+
+  .assentos-tripulacao,
+  .receita-fabrica {
+    grid-template-columns: 1fr;
+  }
+}

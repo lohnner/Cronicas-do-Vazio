@@ -33,6 +33,11 @@
             <span>Tripulação</span>
           </button>
 
+          <button class="aba-botao aba-fabrica" data-aba="fabrica">
+            <span class="aba-icone">▣</span>
+            <span>Fábrica</span>
+          </button>
+
           <button class="aba-botao aba-localizacao" data-aba="localizacao">
             <span class="aba-icone">◉</span>
             <span>Localização</span>
@@ -96,6 +101,11 @@
               <div class="divisoria-perfil"></div>
 
               <section class="perfil-info">
+                <div class="poder-total-topo">
+                  <span>Poder</span>
+                  <strong id="poderTotalPerfil">15</strong>
+                </div>
+
                 <div class="creditos-topo">
                   <span>Créditos</span>
                   <strong id="creditosTopoPerfil">100</strong>
@@ -221,7 +231,12 @@
 
                     <div class="informacao-nave-linha">
                       <span>Tripulação</span>
-                      <strong id="tripulacaoNave">1</strong>
+                      <strong id="tripulacaoNave">2</strong>
+                    </div>
+
+                    <div class="informacao-nave-linha">
+                      <span>Poder</span>
+                      <strong id="poderNave">10</strong>
                     </div>
 
                     <div class="informacao-nave-linha">
@@ -462,9 +477,10 @@
                         />
 
                         <div class="evento-mineracao-info">
-                          <h3>Mineração de Ouro</h3>
+                  <h3>Mineração de Minério de Ouro</h3>
                           <p>Tempo: 10 segundos</p>
-                          <p>Recompensa: 10 de ouro</p>
+                          <p>Requisito: 10 poder</p>
+                          <p>Recompensa: 10 minério de ouro + 1 XP</p>
                         </div>
 
                         <div class="mineracao-progresso">
@@ -491,7 +507,7 @@
                           id="botaoColetarOuro"
                           hidden
                         >
-                          Coletar 10 de ouro
+                          Coletar 10 minério de ouro
                         </button>
                       </article>
                     </div>
@@ -544,7 +560,149 @@
           </section>
 
           <section class="painel-aba" id="tripulacao">
-            <div class="tripulacao-vazia"></div>
+            <div class="tripulacao-layout">
+              <aside class="tripulacao-lateral">
+                <h1>Tripulação</h1>
+
+                <div class="tripulacao-resumo">
+                  <span>Espaços da Pioneira</span>
+                  <strong id="capacidadeTripulacaoTexto">1 / 2</strong>
+                </div>
+
+                <div class="tripulacao-resumo">
+                  <span>Poder total</span>
+                  <strong id="poderTripulacaoTexto">15</strong>
+                </div>
+              </aside>
+
+              <div class="divisoria-tripulacao" aria-hidden="true"></div>
+
+              <section class="tripulacao-conteudo">
+                <div class="assentos-tripulacao" id="assentosTripulacao">
+                  <article class="assento-tripulacao ocupado">
+                    <div class="assento-topo">
+                      <span>Assento 1</span>
+                      <strong>Capitão Estelar</strong>
+                    </div>
+
+                    <div class="tripulante-card">
+                      <img
+                        id="imagemCapitaoTripulacao"
+                        src="imagens/personagens/lian.png"
+                        alt="Lian"
+                      />
+                      <div>
+                        <h2 id="nomeCapitaoTripulacao">Lian</h2>
+                        <p>Personagem equipado</p>
+                        <strong id="poderCapitaoTripulacao">Poder 5</strong>
+                      </div>
+                    </div>
+
+                    <button type="button" class="slot-arma" id="armaCapitao">
+                      <span>Arma</span>
+                      <strong>Vazia</strong>
+                      <small>Poder 0</small>
+                    </button>
+                  </article>
+
+                  <article class="assento-tripulacao vazio">
+                    <div class="assento-topo">
+                      <span>Assento 2</span>
+                      <strong>Disponível</strong>
+                    </div>
+
+                    <div class="tripulante-card vazio">
+                      <div class="tripulante-placeholder">+</div>
+                      <div>
+                        <h2>Sem tripulante</h2>
+                        <p>Espaço livre da Pioneira</p>
+                        <strong>Poder 0</strong>
+                      </div>
+                    </div>
+
+                    <button type="button" class="slot-arma" disabled>
+                      <span>Arma</span>
+                      <strong>Bloqueada</strong>
+                      <small>Poder 0</small>
+                    </button>
+                  </article>
+                </div>
+              </section>
+            </div>
+          </section>
+
+          <section class="painel-aba" id="fabrica">
+            <div class="fabrica-layout">
+              <aside class="fabrica-lateral">
+                <h1>Fábrica</h1>
+
+                <button
+                  type="button"
+                  class="item-minerio-fabrica ativo"
+                  data-receita="barra-ouro"
+                >
+                  <img src="imagens/mineracao/mineriodeouro.png" alt="Minério de ouro" />
+                  <span>Minério de Ouro</span>
+                  <strong id="quantidadeMinerioFabrica">0</strong>
+                </button>
+              </aside>
+
+              <div class="divisoria-fabrica" aria-hidden="true"></div>
+
+              <section class="fabrica-conteudo">
+                <h2>Barra de Ouro</h2>
+
+                <article class="receita-fabrica">
+                  <img
+                    id="imagemResultadoFabrica"
+                    src="imagens/mineracao/barradeouro.png"
+                    alt="Barra de ouro"
+                  />
+
+                  <div class="receita-fabrica-info">
+                    <h3>Fundir minério</h3>
+                    <p>10 minérios de ouro geram 1 barra de ouro.</p>
+                    <p>Tempo: 10 segundos</p>
+                    <p>Venda no mercado: 20 créditos</p>
+                  </div>
+
+                  <div class="energia-fabrica">
+                    <div class="fabrica-status">
+                      <span>Energia</span>
+                      <strong id="energiaFabricaTexto">100 / 100</strong>
+                    </div>
+
+                    <div class="barra-energia-fabrica">
+                      <div id="barraEnergiaFabrica" style="width: 100%;"></div>
+                    </div>
+                  </div>
+
+                  <div class="fabricacao-progresso">
+                    <div class="fabrica-status">
+                      <span id="textoFabricacao">Pronto para fabricar</span>
+                      <strong id="tempoFabricacao">10s</strong>
+                    </div>
+
+                    <div class="barra-fabricacao">
+                      <div id="barraFabricacaoPreenchida"></div>
+                    </div>
+                  </div>
+
+                  <button type="button" class="botao-fabricar" id="botaoFabricarBarra">
+                    Fabricar
+                  </button>
+
+                  <button
+                    type="button"
+                    class="botao-coletar-fabricacao"
+                    id="botaoColetarFabricacao"
+                    hidden
+                  >
+                    Coletar barra de ouro
+                  </button>
+                </article>
+              </section>
+            </div>
           </section>
         </div>
       </section>

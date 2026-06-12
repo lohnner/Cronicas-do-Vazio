@@ -395,7 +395,9 @@ const CHAVE_NAVE_EQUIPADA = "cronicas_do_vazio_nave_equipada";
 const NAVES = {
   Pioneira: {
     nome: "Pioneira",
-    imagem: "imagens/naves/pioneira.png"
+    imagem: "imagens/naves/pioneira.png",
+    capacidadeTripulacao: 2,
+    poder: 10
   }
 };
 
@@ -407,6 +409,17 @@ function aplicarNaveSelecionada(nomeNave) {
 
   nomeNaveEquipadaPerfil.textContent = nave.nome;
   imagemNaveEquipadaPerfil.src = nave.imagem;
+
+  const tripulacaoNave = document.getElementById("tripulacaoNave");
+  const poderNave = document.getElementById("poderNave");
+
+  if (tripulacaoNave) {
+    tripulacaoNave.textContent = String(nave.capacidadeTripulacao);
+  }
+
+  if (poderNave) {
+    poderNave.textContent = String(nave.poder);
+  }
 
   itensNave.forEach((item) => {
     item.classList.toggle("ativo", item.dataset.nave === nave.nome);
@@ -673,7 +686,20 @@ function carregarInventarioPioneira() {
 
   try {
     const inventario = JSON.parse(salvo);
-    return Array.from({ length: 5 }, (_, i) => inventario[i] || null);
+    return Array.from({ length: 5 }, (_, i) => {
+      const item = inventario[i] || null;
+
+      if (item?.id === "ouro") {
+        return {
+          ...item,
+          id: "minerio_ouro",
+          nome: "Minério de Ouro",
+          imagem: "imagens/mineracao/mineriodeouro.png"
+        };
+      }
+
+      return item;
+    });
   } catch {
     const vazio = Array(5).fill(null);
     localStorage.setItem(CHAVE_INVENTARIO_PIONEIRA, JSON.stringify(vazio));
@@ -710,6 +736,9 @@ function renderizarInventarioPioneira() {
     const imagem = document.createElement("img");
     imagem.src = item.imagem;
     imagem.alt = item.nome;
+    imagem.addEventListener("error", () => {
+      imagem.src = "imagens/mineracao/mineriodeouro.png";
+    }, { once: true });
 
     const quantidade = document.createElement("strong");
     quantidade.textContent = item.quantidade;
@@ -725,9 +754,14 @@ function renderizarInventarioPioneira() {
 
 function adicionarOuroAoInventario(quantidade) {
   const inventario = carregarInventarioPioneira();
-  const slotOuro = inventario.findIndex((item) => item?.id === "ouro");
+  const slotOuro = inventario.findIndex((item) =>
+    item?.id === "minerio_ouro" || item?.id === "ouro"
+  );
 
   if (slotOuro >= 0) {
+    inventario[slotOuro].id = "minerio_ouro";
+    inventario[slotOuro].nome = "Minério de Ouro";
+    inventario[slotOuro].imagem = "imagens/mineracao/mineriodeouro.png";
     inventario[slotOuro].quantidade += quantidade;
     salvarInventarioPioneira(inventario);
     return true;
@@ -741,10 +775,10 @@ function adicionarOuroAoInventario(quantidade) {
   }
 
   inventario[slotLivre] = {
-    id: "ouro",
-    nome: "Ouro",
+    id: "minerio_ouro",
+    nome: "Minério de Ouro",
     quantidade,
-    imagem: "imagens/mineracao/ouro.png"
+    imagem: "imagens/mineracao/mineriodeouro.png"
   };
 
   salvarInventarioPioneira(inventario);
@@ -759,13 +793,18 @@ function atualizarEstadoVisualMineracao() {
 function iniciarMineracaoOuro() {
   if (mineracaoEmAndamento || ouroProntoParaColeta) return;
 
+  if (calcularPoderTotal() < 10) {
+    alert("A Pioneira precisa de 10 de poder para iniciar esta mineração.");
+    return;
+  }
+
   mineracaoEmAndamento = true;
   atualizarEstadoVisualMineracao();
 
   const duracao = 10000;
   const inicio = performance.now();
 
-  textoMineracao.textContent = "Minerando ouro";
+  textoMineracao.textContent = "Minerando minério";
   tempoMineracao.textContent = "10s";
   barraMineracaoPreenchida.style.width = "0%";
 
@@ -801,6 +840,8 @@ function coletarOuroMinerado() {
 
   const adicionado = adicionarOuroAoInventario(10);
   if (!adicionado) return;
+
+  adicionarXP(1);
 
   ouroProntoParaColeta = false;
   localStorage.removeItem(CHAVE_MINERACAO_OURO);
@@ -1040,6 +1081,7 @@ iniciarViagem = function(destino) {
 // ===== VENDA DE OURO NA NAVE MÃE =====
 let quantidadeOuroParaVenda = 0;
 let quantidadeMaximaOuroParaVenda = 0;
+let itemVendaAtual = null;
 
 function renderizarInventarioNaveMae() {
   if (!inventarioNaveMae) return;
@@ -1060,8 +1102,8 @@ function renderizarInventarioNaveMae() {
     `;
     botao.setAttribute("aria-label", `${item.nome}, quantidade ${item.quantidade}`);
 
-    if (item.id === "ouro") {
-      botao.addEventListener("click", () => abrirVendaOuro(item.quantidade));
+    if (item.id === "barra_ouro") {
+      botao.addEventListener("click", () => abrirVendaOuro(item.quantidade, item));
     } else {
       botao.disabled = true;
     }
@@ -1093,7 +1135,9 @@ function venderTodoOuro() {
   if (quantidadeOuroParaVenda <= 0) return;
 
   const inventario = carregarInventarioPioneira();
-  const indice = inventario.findIndex((item) => item?.id === "ouro");
+  const idItemVenda = itemVendaAtual?.id || "barra_ouro";
+  const precoItemVenda = itemVendaAtual?.preco || 20;
+  const indice = inventario.findIndex((item) => item?.id === idItemVenda);
 
   if (indice < 0) {
     fecharVendaOuro();
@@ -1107,7 +1151,7 @@ function venderTodoOuro() {
   const creditosAtuais = Number(localStorage.getItem(CHAVE_CREDITOS) || "100");
   localStorage.setItem(
     CHAVE_CREDITOS,
-    String(creditosAtuais + quantidadeVendida)
+    String(creditosAtuais + (quantidadeVendida * precoItemVenda))
   );
 
   inventario[indice].quantidade -= quantidadeVendida;
@@ -1145,8 +1189,11 @@ function atualizarResumoVenda(ajustarCampo = false) {
   }
 
   if (textoConfirmacaoVenda) {
+    const nomeItem = itemVendaAtual?.nome || "Barra de Ouro";
+    const precoItem = itemVendaAtual?.preco || 20;
+
     textoConfirmacaoVenda.textContent =
-      `Voc\u00ea possui ${quantidadeMaximaOuroParaVenda} de ouro. Cada ouro vale 1 cr\u00e9dito.`;
+      `Voc\u00ea possui ${quantidadeMaximaOuroParaVenda} ${nomeItem}. Cada unidade vale ${precoItem} cr\u00e9ditos.`;
   }
 
   if (confirmarVenda) {
@@ -1154,12 +1201,17 @@ function atualizarResumoVenda(ajustarCampo = false) {
   }
 }
 
-abrirVendaOuro = function(quantidade) {
+abrirVendaOuro = function(quantidade, item = null) {
   quantidadeMaximaOuroParaVenda = Math.max(0, Math.floor(Number(quantidade) || 0));
   quantidadeOuroParaVenda = Math.min(1, quantidadeMaximaOuroParaVenda);
+  itemVendaAtual = {
+    id: item?.id || "barra_ouro",
+    nome: item?.nome || "Barra de Ouro",
+    preco: item?.preco || 20
+  };
 
   if (tituloModalVenda) {
-    tituloModalVenda.textContent = "Vender ouro?";
+    tituloModalVenda.textContent = `Vender ${itemVendaAtual.nome}?`;
   }
 
   if (inputQuantidadeVenda) {
@@ -1183,6 +1235,7 @@ fecharVendaOuro = function() {
   modalVenda.setAttribute("aria-hidden", "true");
   quantidadeOuroParaVenda = 0;
   quantidadeMaximaOuroParaVenda = 0;
+  itemVendaAtual = null;
 
   if (inputQuantidadeVenda) {
     inputQuantidadeVenda.value = "1";
@@ -1203,7 +1256,9 @@ venderTodoOuro = function() {
   if (quantidadeOuroParaVenda <= 0) return;
 
   const inventario = carregarInventarioPioneira();
-  const indice = inventario.findIndex((item) => item?.id === "ouro");
+  const idItemVenda = itemVendaAtual?.id || "barra_ouro";
+  const precoItemVenda = itemVendaAtual?.preco || 20;
+  const indice = inventario.findIndex((item) => item?.id === idItemVenda);
 
   if (indice < 0) {
     fecharVendaOuro();
@@ -1218,7 +1273,7 @@ venderTodoOuro = function() {
 
   localStorage.setItem(
     CHAVE_CREDITOS,
-    String(creditosAtuais + quantidadeVendida)
+    String(creditosAtuais + (quantidadeVendida * precoItemVenda))
   );
 
   inventario[indice].quantidade -= quantidadeVendida;
@@ -1350,3 +1405,408 @@ atualizarPlanetaDaConta = function(local) {
 
 atualizarCreditosEmTodaInterface();
 atualizarAbaLocal(localStorage.getItem(CHAVE_PLANETA) || "Terra");
+
+
+// ===== TRIPULACAO, PODER, XP E FABRICA =====
+const CHAVE_XP_JOGADOR = "cronicas_do_vazio_xp_jogador";
+const CHAVE_ENERGIA_FABRICA = "cronicas_do_vazio_energia_fabrica";
+const CHAVE_FABRICACAO_BARRA_OURO = "cronicas_do_vazio_fabricacao_barra_ouro";
+
+const ITEM_MINERIO_OURO = {
+  id: "minerio_ouro",
+  nome: "Minério de Ouro",
+  imagem: "imagens/mineracao/mineriodeouro.png"
+};
+
+const ITEM_BARRA_OURO = {
+  id: "barra_ouro",
+  nome: "Barra de Ouro",
+  imagem: "imagens/mineracao/barradeouro.png",
+  preco: 20
+};
+
+const TRIPULANTES = {
+  lian: {
+    id: "lian",
+    nome: "Lian",
+    cargo: "Capitao Estelar",
+    poder: 5,
+    imagem: "imagens/personagens/lian.png"
+  }
+};
+
+const ARMAS_EQUIPADAS = {
+  capitao: null
+};
+
+const poderTotalPerfil = document.getElementById("poderTotalPerfil");
+const capacidadeTripulacaoTexto = document.getElementById("capacidadeTripulacaoTexto");
+const poderTripulacaoTexto = document.getElementById("poderTripulacaoTexto");
+const imagemCapitaoTripulacao = document.getElementById("imagemCapitaoTripulacao");
+const nomeCapitaoTripulacao = document.getElementById("nomeCapitaoTripulacao");
+const poderCapitaoTripulacao = document.getElementById("poderCapitaoTripulacao");
+const quantidadeMinerioFabrica = document.getElementById("quantidadeMinerioFabrica");
+const energiaFabricaTexto = document.getElementById("energiaFabricaTexto");
+const barraEnergiaFabrica = document.getElementById("barraEnergiaFabrica");
+const textoFabricacao = document.getElementById("textoFabricacao");
+const tempoFabricacao = document.getElementById("tempoFabricacao");
+const barraFabricacaoPreenchida = document.getElementById("barraFabricacaoPreenchida");
+const botaoFabricarBarra = document.getElementById("botaoFabricarBarra");
+const botaoColetarFabricacao = document.getElementById("botaoColetarFabricacao");
+const imagemResultadoFabrica = document.getElementById("imagemResultadoFabrica");
+
+let energiaFabrica = carregarEnergiaFabrica();
+let ultimoTickEnergiaFabrica = performance.now();
+let fabricacaoEmAndamento = false;
+let fabricacaoPronta = localStorage.getItem(CHAVE_FABRICACAO_BARRA_OURO) === "pronto";
+let animacaoFabricacao = null;
+
+if (imagemResultadoFabrica) {
+  imagemResultadoFabrica.addEventListener("error", () => {
+    imagemResultadoFabrica.src = ITEM_MINERIO_OURO.imagem;
+  }, { once: true });
+}
+
+function naveEquipadaAtual() {
+  const nome = localStorage.getItem(CHAVE_NAVE_EQUIPADA) || "Pioneira";
+  return NAVES[nome] || NAVES.Pioneira;
+}
+
+function calcularPoderTripulacao() {
+  const poderPersonagens = TRIPULANTES.lian.poder;
+  const poderArmas = Object.values(ARMAS_EQUIPADAS)
+    .reduce((total, arma) => total + (arma?.poder || 0), 0);
+
+  return poderPersonagens + poderArmas;
+}
+
+function calcularPoderTotal() {
+  return naveEquipadaAtual().poder + calcularPoderTripulacao();
+}
+
+function atualizarSistemaTripulacao() {
+  const nave = naveEquipadaAtual();
+  const poderTripulacao = calcularPoderTripulacao();
+  const poderTotal = calcularPoderTotal();
+  const imagemCapitao = imagemPerfil?.src || TRIPULANTES.lian.imagem;
+
+  if (capacidadeTripulacaoTexto) {
+    capacidadeTripulacaoTexto.textContent = `1 / ${nave.capacidadeTripulacao}`;
+  }
+
+  if (poderTripulacaoTexto) {
+    poderTripulacaoTexto.textContent = String(poderTotal);
+  }
+
+  if (poderTotalPerfil) {
+    poderTotalPerfil.textContent = String(poderTotal);
+  }
+
+  if (imagemCapitaoTripulacao) {
+    imagemCapitaoTripulacao.src = imagemCapitao;
+  }
+
+  if (nomeCapitaoTripulacao) {
+    nomeCapitaoTripulacao.textContent = TRIPULANTES.lian.nome;
+  }
+
+  if (poderCapitaoTripulacao) {
+    poderCapitaoTripulacao.textContent = `Poder ${TRIPULANTES.lian.poder}`;
+  }
+
+  const poderNave = document.getElementById("poderNave");
+  const tripulacaoNave = document.getElementById("tripulacaoNave");
+
+  if (poderNave) poderNave.textContent = String(nave.poder);
+  if (tripulacaoNave) tripulacaoNave.textContent = String(nave.capacidadeTripulacao);
+
+  atualizarEstadoVisualMineracao();
+}
+
+function carregarXPJogador() {
+  const xp = Number(localStorage.getItem(CHAVE_XP_JOGADOR) || "0");
+  return Number.isFinite(xp) && xp >= 0 ? xp : 0;
+}
+
+function salvarXPJogador(xp) {
+  localStorage.setItem(CHAVE_XP_JOGADOR, String(Math.max(0, Math.floor(xp))));
+  atualizarXPJogador();
+}
+
+function adicionarXP(quantidade) {
+  salvarXPJogador(carregarXPJogador() + quantidade);
+}
+
+function atualizarXPJogador() {
+  const xpTotal = carregarXPJogador();
+  const nivel = Math.floor(xpTotal / 100) + 1;
+  const xpNivel = xpTotal % 100;
+  const nivelTexto = document.querySelector(".nivel-texto");
+  const xpTexto = document.querySelector(".xp-texto");
+  const xpPreenchido = document.querySelector(".xp-preenchido");
+
+  if (nivelTexto) nivelTexto.textContent = `Nível ${nivel}`;
+  if (xpTexto) xpTexto.textContent = `${xpNivel} / 100`;
+  if (xpPreenchido) xpPreenchido.style.width = `${xpNivel}%`;
+}
+
+function contarItemInventario(idItem) {
+  return carregarInventarioPioneira()
+    .filter((item) => item?.id === idItem)
+    .reduce((total, item) => total + item.quantidade, 0);
+}
+
+function adicionarItemAoInventario(itemBase, quantidade) {
+  const inventario = carregarInventarioPioneira();
+  const indiceExistente = inventario.findIndex((item) => item?.id === itemBase.id);
+
+  if (indiceExistente >= 0) {
+    inventario[indiceExistente].quantidade += quantidade;
+    salvarInventarioPioneira(inventario);
+    return true;
+  }
+
+  const slotLivre = inventario.findIndex((item) => item === null);
+
+  if (slotLivre < 0) {
+    alert("O inventário da Pioneira está cheio.");
+    return false;
+  }
+
+  inventario[slotLivre] = {
+    id: itemBase.id,
+    nome: itemBase.nome,
+    quantidade,
+    imagem: itemBase.imagem,
+    preco: itemBase.preco
+  };
+
+  salvarInventarioPioneira(inventario);
+  return true;
+}
+
+function removerItemDoInventario(idItem, quantidade) {
+  const inventario = carregarInventarioPioneira();
+  let restante = quantidade;
+
+  for (const item of inventario) {
+    if (!item || item.id !== idItem || restante <= 0) continue;
+
+    const remover = Math.min(item.quantidade, restante);
+    item.quantidade -= remover;
+    restante -= remover;
+  }
+
+  if (restante > 0) return false;
+
+  salvarInventarioPioneira(
+    inventario.map((item) => item && item.quantidade > 0 ? item : null)
+  );
+
+  return true;
+}
+
+function carregarEnergiaFabrica() {
+  const energia = Number(localStorage.getItem(CHAVE_ENERGIA_FABRICA));
+
+  if (!Number.isFinite(energia)) {
+    localStorage.setItem(CHAVE_ENERGIA_FABRICA, "100");
+    return 100;
+  }
+
+  return Math.max(0, Math.min(100, energia));
+}
+
+function salvarEnergiaFabrica(valor) {
+  energiaFabrica = Math.max(0, Math.min(100, valor));
+  localStorage.setItem(CHAVE_ENERGIA_FABRICA, String(Math.floor(energiaFabrica)));
+  atualizarInterfaceFabrica();
+}
+
+function atualizarInterfaceFabrica() {
+  const minerio = contarItemInventario(ITEM_MINERIO_OURO.id);
+  const energiaInteira = Math.floor(energiaFabrica);
+  const podeFabricar = minerio >= 10 && energiaFabrica >= 25 &&
+    !fabricacaoEmAndamento && !fabricacaoPronta;
+
+  if (quantidadeMinerioFabrica) {
+    quantidadeMinerioFabrica.textContent = String(minerio);
+  }
+
+  if (energiaFabricaTexto) {
+    energiaFabricaTexto.textContent = `${energiaInteira} / 100`;
+  }
+
+  if (barraEnergiaFabrica) {
+    barraEnergiaFabrica.style.width = `${energiaFabrica}%`;
+  }
+
+  if (botaoFabricarBarra) {
+    botaoFabricarBarra.disabled = !podeFabricar;
+    botaoFabricarBarra.textContent = fabricacaoEmAndamento ? "Fabricando" : "Fabricar";
+  }
+
+  if (botaoColetarFabricacao) {
+    botaoColetarFabricacao.hidden = !fabricacaoPronta;
+  }
+
+  if (!fabricacaoEmAndamento && !fabricacaoPronta) {
+    if (textoFabricacao) textoFabricacao.textContent = "Pronto para fabricar";
+    if (tempoFabricacao) tempoFabricacao.textContent = "10s";
+    if (barraFabricacaoPreenchida) barraFabricacaoPreenchida.style.width = "0%";
+  }
+}
+
+function iniciarFabricacaoBarraOuro() {
+  if (fabricacaoEmAndamento || fabricacaoPronta) return;
+
+  if (contarItemInventario(ITEM_MINERIO_OURO.id) < 10) {
+    alert("Você precisa de 10 minérios de ouro.");
+    return;
+  }
+
+  if (energiaFabrica < 25) {
+    alert("A fábrica precisa de 25 de energia.");
+    return;
+  }
+
+  if (!removerItemDoInventario(ITEM_MINERIO_OURO.id, 10)) return;
+
+  salvarEnergiaFabrica(energiaFabrica - 25);
+  fabricacaoEmAndamento = true;
+  atualizarInterfaceFabrica();
+
+  const duracao = 10000;
+  const inicio = performance.now();
+
+  if (textoFabricacao) textoFabricacao.textContent = "Fabricando barra";
+  if (tempoFabricacao) tempoFabricacao.textContent = "10s";
+  if (barraFabricacaoPreenchida) barraFabricacaoPreenchida.style.width = "0%";
+
+  function atualizar(agora) {
+    const decorrido = agora - inicio;
+    const progresso = Math.min(decorrido / duracao, 1);
+    const restante = Math.max(0, Math.ceil((duracao - decorrido) / 1000));
+
+    if (barraFabricacaoPreenchida) {
+      barraFabricacaoPreenchida.style.width = `${progresso * 100}%`;
+    }
+
+    if (tempoFabricacao) {
+      tempoFabricacao.textContent = `${restante}s`;
+    }
+
+    if (progresso < 1) {
+      animacaoFabricacao = requestAnimationFrame(atualizar);
+      return;
+    }
+
+    fabricacaoEmAndamento = false;
+    fabricacaoPronta = true;
+    localStorage.setItem(CHAVE_FABRICACAO_BARRA_OURO, "pronto");
+
+    if (textoFabricacao) textoFabricacao.textContent = "Fabricação concluída";
+    if (tempoFabricacao) tempoFabricacao.textContent = "Pronto";
+    if (barraFabricacaoPreenchida) barraFabricacaoPreenchida.style.width = "100%";
+
+    atualizarInterfaceFabrica();
+  }
+
+  animacaoFabricacao = requestAnimationFrame(atualizar);
+}
+
+function coletarFabricacaoBarraOuro() {
+  if (!fabricacaoPronta) return;
+
+  if (!adicionarItemAoInventario(ITEM_BARRA_OURO, 1)) return;
+
+  fabricacaoPronta = false;
+  localStorage.removeItem(CHAVE_FABRICACAO_BARRA_OURO);
+  atualizarInterfaceFabrica();
+}
+
+function atualizarEnergiaFabrica(agora) {
+  const delta = Math.max(0, (agora - ultimoTickEnergiaFabrica) / 1000);
+  ultimoTickEnergiaFabrica = agora;
+
+  if (!fabricacaoEmAndamento && energiaFabrica < 100) {
+    salvarEnergiaFabrica(energiaFabrica + (delta * 5));
+  }
+
+  requestAnimationFrame(atualizarEnergiaFabrica);
+}
+
+function renderizarTripulacaoERecursos() {
+  atualizarSistemaTripulacao();
+  atualizarXPJogador();
+  atualizarInterfaceFabrica();
+}
+
+const salvarInventarioPioneiraOriginal = salvarInventarioPioneira;
+salvarInventarioPioneira = function(inventario) {
+  salvarInventarioPioneiraOriginal(inventario);
+  atualizarInterfaceFabrica();
+
+  if (painelNaveMae && !painelNaveMae.hidden) {
+    renderizarInventarioNaveMae();
+  }
+};
+
+const atualizarEstadoVisualMineracaoOriginal = atualizarEstadoVisualMineracao;
+atualizarEstadoVisualMineracao = function() {
+  atualizarEstadoVisualMineracaoOriginal();
+
+  if (!botaoMinerar) return;
+
+  const poderSuficiente = calcularPoderTotal() >= 10;
+  botaoMinerar.disabled = !poderSuficiente || mineracaoEmAndamento || ouroProntoParaColeta;
+
+  if (!poderSuficiente && textoMineracao) {
+    textoMineracao.textContent = "Poder insuficiente";
+  } else if (!mineracaoEmAndamento && !ouroProntoParaColeta && textoMineracao) {
+    textoMineracao.textContent = "Pronto para minerar";
+  }
+};
+
+const abrirConfirmacaoViagemSemMineracao = abrirConfirmacaoViagem;
+abrirConfirmacaoViagem = function(destino) {
+  if (mineracaoEmAndamento) {
+    alert("Aguarde o fim da mineração antes de mudar de localização.");
+    return;
+  }
+
+  abrirConfirmacaoViagemSemMineracao(destino);
+};
+
+const iniciarViagemSemMineracao = iniciarViagem;
+iniciarViagem = function(destino) {
+  if (mineracaoEmAndamento) {
+    alert("Aguarde o fim da mineração antes de viajar.");
+    return;
+  }
+
+  iniciarViagemSemMineracao(destino);
+};
+
+const aplicarNaveSelecionadaComPoder = aplicarNaveSelecionada;
+aplicarNaveSelecionada = function(nomeNave) {
+  aplicarNaveSelecionadaComPoder(nomeNave);
+  atualizarSistemaTripulacao();
+};
+
+if (imagemPerfil) {
+  new MutationObserver(atualizarSistemaTripulacao)
+    .observe(imagemPerfil, { attributes: true, attributeFilter: ["src"] });
+}
+
+botaoFabricarBarra?.addEventListener("click", iniciarFabricacaoBarraOuro);
+botaoColetarFabricacao?.addEventListener("click", coletarFabricacaoBarraOuro);
+
+if (fabricacaoPronta) {
+  if (textoFabricacao) textoFabricacao.textContent = "Fabricação concluída";
+  if (tempoFabricacao) tempoFabricacao.textContent = "Pronto";
+  if (barraFabricacaoPreenchida) barraFabricacaoPreenchida.style.width = "100%";
+}
+
+renderizarTripulacaoERecursos();
+requestAnimationFrame(atualizarEnergiaFabrica);
