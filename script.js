@@ -1021,7 +1021,7 @@ function calcularConsumoIntegridadeViagem(duracaoSegundos) {
 }
 
 function formatarNumeroRecurso(valor) {
-  return Number.isInteger(valor) ? String(valor) : valor.toFixed(1);
+  return Number.isInteger(valor) ? String(valor) : valor.toFixed(1).replace(".", ",");
 }
 
 function calcularConsumoAtividade(duracaoSegundos) {
