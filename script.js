@@ -67,6 +67,7 @@ const IMAGEM_MINERIO_TITANIO = "imagens/mineracao/minerios/mineriodetitanio.png"
 const IMAGEM_BARRA_OURO = "imagens/mineracao/barras/barradeouro.png";
 const IMAGEM_BARRA_COBRE = "imagens/mineracao/barras/barradecobre.png";
 const IMAGEM_BARRA_TITANIO = "imagens/mineracao/barras/barradetitanio.png";
+const IMAGEM_ARMA_BT1 = "imagens/armas/BT-1.png";
 const IMAGEM_EVENTO_OURO = "imagens/mineracao/eventos/mineracaoouro.png";
 const IMAGEM_EVENTO_COBRE = "imagens/mineracao/eventos/mineracaocobre.png";
 const IMAGEM_EVENTO_TITANIO = "imagens/mineracao/eventos/mineracaotitanio.png";
@@ -1875,7 +1876,10 @@ iniciarViagem = function(destino) {
     definirBloqueioCards(false);
     atualizarPlanetaDaConta(destino);
     atualizarInterfaceLocalizacao(destino);
-    if (destino === "Terra") concluirMissao("viajar_terra");
+    if (destino === "Terra") {
+      concluirMissao("viajar_terra");
+      concluirMissao("voltar_terra_bt1");
+    }
 
     if (caixaPlanetaAtual) caixaPlanetaAtual.classList.remove("viajando");
   }
@@ -2230,6 +2234,8 @@ const CHAVE_FABRICACAO_ATUAL = "cronicas_do_vazio_fabricacao_atual";
 const CHAVE_MINERACAO_PRONTA = "cronicas_do_vazio_mineracao_pronta";
 const CHAVE_MISSAO_ATUAL = "cronicas_do_vazio_missao_atual";
 const CHAVE_MISSOES_CONCLUIDAS = "cronicas_do_vazio_missoes_concluidas";
+const CHAVE_INVENTARIO_ARMAS_TRIPULACAO = "cronicas_do_vazio_inventario_armas_tripulacao";
+const CHAVE_ARMAS_EQUIPADAS_TRIPULACAO = "cronicas_do_vazio_armas_equipadas_tripulacao";
 
 const ITEM_MINERIO_OURO = {
   id: "minerio_ouro",
@@ -2271,6 +2277,16 @@ const ITEM_BARRA_TITANIO = {
   preco: 30
 };
 
+const ITEM_ARMA_BT1 = {
+  id: "arma_bt1",
+  nome: "BT-1",
+  tipo: "arma",
+  imagem: IMAGEM_ARMA_BT1,
+  danoMin: 1,
+  danoMax: 5,
+  poder: 10
+};
+
 const TRIPULANTES = {
   lian: {
     id: "lian",
@@ -2281,9 +2297,69 @@ const TRIPULANTES = {
   }
 };
 
-const ARMAS_EQUIPADAS = {
-  capitao: null
-};
+function normalizarArmaTripulacao(arma) {
+  if (!arma) return null;
+
+  if (arma.id === ITEM_ARMA_BT1.id) {
+    return {
+      ...ITEM_ARMA_BT1,
+      ...arma,
+      tipo: "arma",
+      imagem: IMAGEM_ARMA_BT1,
+      danoMin: 1,
+      danoMax: 5,
+      poder: 10
+    };
+  }
+
+  return null;
+}
+
+function carregarInventarioArmas() {
+  const salvo = localStorage.getItem(CHAVE_INVENTARIO_ARMAS_TRIPULACAO);
+
+  if (!salvo) {
+    localStorage.setItem(CHAVE_INVENTARIO_ARMAS_TRIPULACAO, JSON.stringify([]));
+    return [];
+  }
+
+  try {
+    const armas = JSON.parse(salvo);
+    if (!Array.isArray(armas)) throw new Error("Inventario de armas invalido");
+
+    const normalizado = armas
+      .map(normalizarArmaTripulacao)
+      .filter(Boolean);
+
+    localStorage.setItem(CHAVE_INVENTARIO_ARMAS_TRIPULACAO, JSON.stringify(normalizado));
+    return normalizado;
+  } catch {
+    localStorage.setItem(CHAVE_INVENTARIO_ARMAS_TRIPULACAO, JSON.stringify([]));
+    return [];
+  }
+}
+
+function carregarArmasEquipadas() {
+  const vazio = { capitao: null };
+  const salvo = localStorage.getItem(CHAVE_ARMAS_EQUIPADAS_TRIPULACAO);
+
+  if (!salvo) {
+    localStorage.setItem(CHAVE_ARMAS_EQUIPADAS_TRIPULACAO, JSON.stringify(vazio));
+    return { ...vazio };
+  }
+
+  try {
+    const armas = JSON.parse(salvo);
+    return {
+      capitao: normalizarArmaTripulacao(armas?.capitao)
+    };
+  } catch {
+    localStorage.setItem(CHAVE_ARMAS_EQUIPADAS_TRIPULACAO, JSON.stringify(vazio));
+    return { ...vazio };
+  }
+}
+
+const ARMAS_EQUIPADAS = carregarArmasEquipadas();
 
 const poderTotalPerfil = document.getElementById("poderTotalPerfil");
 const capacidadeTripulacaoTexto = document.getElementById("capacidadeTripulacaoTexto");
@@ -2291,6 +2367,12 @@ const poderTripulacaoTexto = document.getElementById("poderTripulacaoTexto");
 const imagemCapitaoTripulacao = document.getElementById("imagemCapitaoTripulacao");
 const nomeCapitaoTripulacao = document.getElementById("nomeCapitaoTripulacao");
 const poderCapitaoTripulacao = document.getElementById("poderCapitaoTripulacao");
+const armaCapitao = document.getElementById("armaCapitao");
+const inventarioArmasTripulacao = document.getElementById("inventarioArmasTripulacao");
+const modalEquiparArma = document.getElementById("modalEquiparArma");
+const fecharModalEquiparArma = document.getElementById("fecharModalEquiparArma");
+const nomeArmaSelecionadaTripulacao = document.getElementById("nomeArmaSelecionadaTripulacao");
+const opcoesTripulantesArma = document.getElementById("opcoesTripulantesArma");
 const quantidadeMinerioFabrica = document.getElementById("quantidadeMinerioFabrica");
 const energiaFabricaTexto = document.getElementById("energiaFabricaTexto");
 const barraEnergiaFabrica = document.getElementById("barraEnergiaFabrica");
@@ -2327,6 +2409,7 @@ let fabricacaoAtual = null;
 let fabricacaoPronta = false;
 let mineracaoSelecionada = null;
 let mineracaoPronta = null;
+let armaSelecionadaInventario = null;
 
 const RECEITAS_FABRICA = {
   barra_ouro: {
@@ -2353,6 +2436,18 @@ const RECEITAS_FABRICA = {
     entrada: ITEM_MINERIO_TITANIO,
     quantidadeEntrada: 10,
     saida: ITEM_BARRA_TITANIO,
+    duracaoSegundos: TEMPO_FABRICACAO_SEGUNDOS,
+    energiaNecessaria: 10
+  },
+  arma_bt1: {
+    id: "arma_bt1",
+    nome: "BT-1",
+    entradas: [
+      { item: ITEM_BARRA_COBRE, quantidade: 1 },
+      { item: ITEM_BARRA_TITANIO, quantidade: 1 }
+    ],
+    saida: ITEM_ARMA_BT1,
+    tipoSaida: "arma",
     duracaoSegundos: TEMPO_FABRICACAO_SEGUNDOS,
     energiaNecessaria: 10
   }
@@ -2425,6 +2520,7 @@ function atualizarSistemaTripulacao() {
   const poderTripulacao = calcularPoderTripulacao();
   const poderTotal = calcularPoderTotal();
   const imagemCapitao = TRIPULANTES.lian.imagem;
+  const armaEquipadaCapitao = ARMAS_EQUIPADAS.capitao;
 
   if (imagemPerfil) {
     if (imagemPerfil.getAttribute("src") !== imagemCapitao) {
@@ -2453,10 +2549,188 @@ function atualizarSistemaTripulacao() {
   }
 
   if (poderCapitaoTripulacao) {
-    poderCapitaoTripulacao.textContent = `Poder ${TRIPULANTES.lian.poder}`;
+    poderCapitaoTripulacao.textContent =
+      `Poder ${TRIPULANTES.lian.poder + (armaEquipadaCapitao?.poder || 0)}`;
   }
 
+  if (armaCapitao) {
+    const nomeArma = armaCapitao.querySelector("strong");
+    const detalheArma = armaCapitao.querySelector("small");
+
+    armaCapitao.classList.toggle("equipada", !!armaEquipadaCapitao);
+    if (nomeArma) nomeArma.textContent = armaEquipadaCapitao?.nome || "Vazia";
+    if (detalheArma) {
+      detalheArma.textContent = armaEquipadaCapitao
+        ? `Dano ${armaEquipadaCapitao.danoMin} a ${armaEquipadaCapitao.danoMax} | Poder +${armaEquipadaCapitao.poder}`
+        : "Poder 0";
+    }
+  }
+
+  renderizarInventarioArmasTripulacao();
   atualizarEstadoVisualMineracao();
+}
+
+function salvarInventarioArmas(armas) {
+  const normalizado = armas
+    .map(normalizarArmaTripulacao)
+    .filter(Boolean);
+
+  localStorage.setItem(CHAVE_INVENTARIO_ARMAS_TRIPULACAO, JSON.stringify(normalizado));
+  renderizarInventarioArmasTripulacao();
+  verificarProgressoMissoesBt1();
+}
+
+function salvarArmasEquipadas(armas) {
+  const normalizado = {
+    capitao: normalizarArmaTripulacao(armas?.capitao)
+  };
+
+  ARMAS_EQUIPADAS.capitao = normalizado.capitao;
+  localStorage.setItem(CHAVE_ARMAS_EQUIPADAS_TRIPULACAO, JSON.stringify(normalizado));
+  atualizarSistemaTripulacao();
+  verificarProgressoMissoesBt1();
+}
+
+function adicionarArmaAoInventario(arma) {
+  const armaNormalizada = normalizarArmaTripulacao(arma);
+  if (!armaNormalizada) return false;
+
+  const inventario = carregarInventarioArmas();
+  inventario.push(armaNormalizada);
+  salvarInventarioArmas(inventario);
+  return true;
+}
+
+function fecharJanelaEquiparArma() {
+  modalEquiparArma?.classList.remove("ativo");
+  modalEquiparArma?.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("modal-aberto");
+}
+
+function equiparArmaSelecionada(slotTripulacao) {
+  const inventario = carregarInventarioArmas();
+  const indice = armaSelecionadaInventario?.indice;
+  const arma = Number.isInteger(indice)
+    ? normalizarArmaTripulacao(inventario[indice])
+    : null;
+
+  if (!arma || !slotTripulacao) return;
+
+  const armaAnterior = normalizarArmaTripulacao(ARMAS_EQUIPADAS[slotTripulacao]);
+  inventario.splice(indice, 1);
+  if (armaAnterior) inventario.push(armaAnterior);
+
+  armaSelecionadaInventario = null;
+  salvarInventarioArmas(inventario);
+  salvarArmasEquipadas({
+    ...ARMAS_EQUIPADAS,
+    [slotTripulacao]: arma
+  });
+  fecharJanelaEquiparArma();
+}
+
+function renderizarOpcoesTripulantesArma() {
+  if (!opcoesTripulantesArma) return;
+
+  opcoesTripulantesArma.innerHTML = "";
+
+  const botaoCapitao = document.createElement("button");
+  botaoCapitao.type = "button";
+  botaoCapitao.className = "opcao-tripulante-arma";
+
+  const imagem = document.createElement("img");
+  imagem.src = TRIPULANTES.lian.imagem;
+  imagem.alt = TRIPULANTES.lian.nome;
+
+  const info = document.createElement("div");
+  const nome = document.createElement("strong");
+  const cargo = document.createElement("span");
+  const armaAtual = document.createElement("small");
+
+  nome.textContent = TRIPULANTES.lian.nome;
+  cargo.textContent = "Assento 1 | Capitão Estelar";
+  armaAtual.textContent = ARMAS_EQUIPADAS.capitao
+    ? `Arma atual: ${ARMAS_EQUIPADAS.capitao.nome}`
+    : "Arma atual: Vazia";
+
+  info.append(nome, cargo, armaAtual);
+  botaoCapitao.append(imagem, info);
+  botaoCapitao.addEventListener("click", () => equiparArmaSelecionada("capitao"));
+  opcoesTripulantesArma.appendChild(botaoCapitao);
+}
+
+function abrirJanelaEquiparArma() {
+  const arma = armaSelecionadaInventario?.arma;
+  if (!arma) return;
+
+  if (nomeArmaSelecionadaTripulacao) {
+    nomeArmaSelecionadaTripulacao.textContent =
+      `${arma.nome} | Dano ${arma.danoMin} a ${arma.danoMax} | Poder +${arma.poder}`;
+  }
+
+  renderizarOpcoesTripulantesArma();
+  modalEquiparArma?.classList.add("ativo");
+  modalEquiparArma?.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-aberto");
+}
+
+function selecionarArmaInventario(indice) {
+  const inventario = carregarInventarioArmas();
+  const arma = normalizarArmaTripulacao(inventario[indice]);
+  if (!arma) return;
+
+  armaSelecionadaInventario = { indice, arma };
+  renderizarInventarioArmasTripulacao();
+  abrirJanelaEquiparArma();
+}
+
+function renderizarInventarioArmasTripulacao() {
+  if (!inventarioArmasTripulacao) return;
+
+  const inventario = carregarInventarioArmas();
+
+  if (
+    armaSelecionadaInventario &&
+    !normalizarArmaTripulacao(inventario[armaSelecionadaInventario.indice])
+  ) {
+    armaSelecionadaInventario = null;
+  }
+
+  inventarioArmasTripulacao.innerHTML = "";
+
+  if (!inventario.length) {
+    const vazio = document.createElement("p");
+    vazio.className = "inventario-armas-vazio";
+    vazio.textContent = "Nenhuma arma no inventário.";
+    inventarioArmasTripulacao.appendChild(vazio);
+    return;
+  }
+
+  inventario.forEach((arma, indice) => {
+    const botao = document.createElement("button");
+    botao.type = "button";
+    botao.className = "item-arma-tripulacao";
+    botao.classList.toggle("selecionado", armaSelecionadaInventario?.indice === indice);
+
+    const imagem = document.createElement("img");
+    imagem.src = arma.imagem;
+    imagem.alt = arma.nome;
+
+    const info = document.createElement("div");
+    const nome = document.createElement("strong");
+    const dano = document.createElement("span");
+    const poder = document.createElement("small");
+
+    nome.textContent = arma.nome;
+    dano.textContent = `Dano ${arma.danoMin} a ${arma.danoMax}`;
+    poder.textContent = `Poder +${arma.poder}`;
+
+    info.append(nome, dano, poder);
+    botao.append(imagem, info);
+    botao.addEventListener("click", () => selecionarArmaInventario(indice));
+
+    inventarioArmasTripulacao.appendChild(botao);
+  });
 }
 
 function carregarXPJogador() {
@@ -2526,6 +2800,38 @@ const MISSOES_IA = [
     texto:
       "Toda rota deixa marcas no casco e no tanque. Antes que a IA libere contratos maiores, garanta que a nave esteja abastecida para não ficar presa longe da estação.",
     objetivo: "Não esqueça que tem que reabastecer a nave, na aba Local na Nave mãe clique em Encher o tanque de Xenônio-9"
+  },
+  {
+    conclusao: "voltar_terra_bt1",
+    etiqueta: "Primeira Arma",
+    titulo: "Retorno para a Terra",
+    texto:
+      "A Nave Mãe liberou o primeiro projeto de armamento leve. A BT-1 precisa de cobre para condução e titânio para aguentar calor de disparo, então a rota volta para a Terra.",
+    objetivo: "Volte para a Terra na aba Localização para buscar minérios de cobre e titânio."
+  },
+  {
+    conclusao: "coletar_minerios_bt1",
+    etiqueta: "Matéria-prima",
+    titulo: "Cobre e titânio para a BT-1",
+    texto:
+      "O projeto da BT-1 está pronto, mas a fábrica ainda precisa de material bruto. Colete cobre e titânio suficientes para transformar em barras antes da montagem da arma.",
+    objetivo: "Na aba Local da Terra, colete minério de cobre e minério de titânio para fabricar as barras."
+  },
+  {
+    conclusao: "fabricar_barras_bt1",
+    etiqueta: "Refino de Combate",
+    titulo: "Barras para o chassi da arma",
+    texto:
+      "Com os minérios no porão, use a Fábrica para refinar os metais. A barra de cobre alimenta o circuito da BT-1, e a barra de titânio forma a carcaça da arma.",
+    objetivo: "Na aba Fábrica, transforme os minérios em 1 barra de cobre e 1 barra de titânio."
+  },
+  {
+    conclusao: "fabricar_arma_bt1",
+    etiqueta: "Armamento Inicial",
+    titulo: "Monte a BT-1",
+    texto:
+      "As barras estão prontas. Agora a Fábrica pode montar a primeira arma da tripulação, uma BT-1 simples, confiável e suficiente para aumentar o poder de missão.",
+    objetivo: "Na aba Fábrica > Armas, fabrique a BT-1 com 1 barra de cobre e 1 barra de titânio."
   }
 ];
 
@@ -2557,6 +2863,15 @@ function atualizarMissoes() {
     return;
   }
 
+  if (missao?.conclusao === "voltar_terra_bt1" && localStorage.getItem(CHAVE_PLANETA) === "Terra") {
+    concluirMissao("voltar_terra_bt1");
+    return;
+  }
+
+  if (verificarProgressoMissoesBt1()) {
+    return;
+  }
+
   if (!missao) {
     if (etiquetaMissaoAtual) etiquetaMissaoAtual.textContent = "Continuação";
     if (tituloMissaoAtual) tituloMissaoAtual.textContent = "Continuação em BREVE";
@@ -2582,6 +2897,46 @@ function concluirMissao(tipoConclusao) {
 
   salvarEstadoMissoes(indice + 1, carregarTotalMissoesConcluidas() + 1);
   atualizarMissoes();
+}
+
+function possuiArmaBt1() {
+  return (
+    carregarInventarioArmas().some((arma) => arma?.id === ITEM_ARMA_BT1.id) ||
+    Object.values(ARMAS_EQUIPADAS).some((arma) => arma?.id === ITEM_ARMA_BT1.id)
+  );
+}
+
+function verificarProgressoMissoesBt1() {
+  const missao = MISSOES_IA[carregarIndiceMissaoAtual()];
+  if (!missao) return false;
+
+  const temBarrasBt1 =
+    contarItemInventario(ITEM_BARRA_COBRE.id) >= 1 &&
+    contarItemInventario(ITEM_BARRA_TITANIO.id) >= 1;
+  const temMineriosBt1 =
+    contarItemInventario(ITEM_MINERIO_COBRE.id) >= 10 &&
+    contarItemInventario(ITEM_MINERIO_TITANIO.id) >= 10;
+  const temBt1 = possuiArmaBt1();
+
+  if (
+    missao.conclusao === "coletar_minerios_bt1" &&
+    (temMineriosBt1 || temBarrasBt1 || temBt1)
+  ) {
+    concluirMissao("coletar_minerios_bt1");
+    return true;
+  }
+
+  if (missao.conclusao === "fabricar_barras_bt1" && (temBarrasBt1 || temBt1)) {
+    concluirMissao("fabricar_barras_bt1");
+    return true;
+  }
+
+  if (missao.conclusao === "fabricar_arma_bt1" && temBt1) {
+    concluirMissao("fabricar_arma_bt1");
+    return true;
+  }
+
+  return false;
 }
 
 if (imagemIaMissoes) {
@@ -2984,6 +3339,43 @@ function atualizarCategoriaFabrica(categoria) {
   if (fabricaPainelArmas) fabricaPainelArmas.hidden = mostrarMinerios;
 }
 
+function obterEntradasReceita(receita) {
+  if (Array.isArray(receita?.entradas)) {
+    return receita.entradas;
+  }
+
+  if (receita?.entrada) {
+    return [
+      {
+        item: receita.entrada,
+        quantidade: receita.quantidadeEntrada
+      }
+    ];
+  }
+
+  return [];
+}
+
+function temEntradasReceita(receita) {
+  return obterEntradasReceita(receita).every((entrada) => (
+    contarItemInventario(entrada.item.id) >= entrada.quantidade
+  ));
+}
+
+function textoEntradasFaltando(receita) {
+  return obterEntradasReceita(receita)
+    .filter((entrada) => contarItemInventario(entrada.item.id) < entrada.quantidade)
+    .map((entrada) => `${entrada.quantidade} ${entrada.item.nome.toLowerCase()}`)
+    .join(" e ");
+}
+
+function consumirEntradasReceita(receita) {
+  if (!temEntradasReceita(receita)) return false;
+
+  return obterEntradasReceita(receita)
+    .every((entrada) => removerItemDoInventario(entrada.item.id, entrada.quantidade));
+}
+
 function estadoFabricacaoAtual() {
   if (!fabricacaoAtual) {
     fabricacaoEmAndamento = false;
@@ -3026,7 +3418,8 @@ function atualizarInterfaceFabrica() {
 
   estoquesReceitaFabrica.forEach((elemento) => {
     const quantidade = contarItemInventario(elemento.dataset.estoque);
-    elemento.textContent = `Minérios: ${quantidade}`;
+    const rotulo = elemento.dataset.rotulo || "Minérios";
+    elemento.textContent = `${rotulo}: ${quantidade}`;
   });
 
   if (energiaFabricaTexto) {
@@ -3038,7 +3431,6 @@ function atualizarInterfaceFabrica() {
   }
 
   Object.values(RECEITAS_FABRICA).forEach((receita) => {
-    const estoqueEntrada = contarItemInventario(receita.entrada.id);
     const status = document.querySelector(`[data-status-receita="${receita.id}"]`);
     const tempo = document.querySelector(`[data-tempo-receita="${receita.id}"]`);
     const barra = document.querySelector(`[data-barra-receita="${receita.id}"]`);
@@ -3080,7 +3472,7 @@ function atualizarInterfaceFabrica() {
     if (botaoIniciar) {
       botaoIniciar.disabled =
         fabricaOcupada ||
-        estoqueEntrada < receita.quantidadeEntrada ||
+        !temEntradasReceita(receita) ||
         energiaFabrica < receita.energiaNecessaria;
       botaoIniciar.textContent = "Fabricar";
     }
@@ -3092,8 +3484,8 @@ function iniciarFabricacao(tipoReceita) {
   const receita = RECEITAS_FABRICA[tipoReceita];
   if (!receita || fabricacaoAtual) return;
 
-  if (contarItemInventario(receita.entrada.id) < receita.quantidadeEntrada) {
-    alert(`Você precisa de ${receita.quantidadeEntrada} ${receita.entrada.nome.toLowerCase()}.`);
+  if (!temEntradasReceita(receita)) {
+    alert(`Você precisa de ${textoEntradasFaltando(receita)}.`);
     return;
   }
 
@@ -3102,7 +3494,11 @@ function iniciarFabricacao(tipoReceita) {
     return;
   }
 
-  if (!removerItemDoInventario(receita.entrada.id, receita.quantidadeEntrada)) return;
+  if (receita.id === "arma_bt1") {
+    concluirMissao("fabricar_barras_bt1");
+  }
+
+  if (!consumirEntradasReceita(receita)) return;
 
   const agora = Date.now();
   salvarEnergiaFabrica(energiaFabrica, agora);
@@ -3127,7 +3523,12 @@ function coletarFabricacao(tipoReceita) {
   const estado = estadoFabricacaoAtual();
   if (!estado?.pronta || estado.receita.id !== tipoReceita) return;
 
-  if (!adicionarItemAoInventario(estado.receita.saida, 1)) return;
+  if (estado.receita.tipoSaida === "arma") {
+    if (!adicionarArmaAoInventario(estado.receita.saida)) return;
+    if (estado.receita.id === "arma_bt1") concluirMissao("fabricar_arma_bt1");
+  } else if (!adicionarItemAoInventario(estado.receita.saida, 1)) {
+    return;
+  }
 
   salvarFabricacaoAtual(null);
   atualizarInterfaceFabrica();
@@ -3156,6 +3557,7 @@ const salvarInventarioPioneiraOriginal = salvarInventarioPioneira;
 salvarInventarioPioneira = function(inventario) {
   salvarInventarioPioneiraOriginal(inventario);
   atualizarInterfaceFabrica();
+  verificarProgressoMissoesBt1();
 
   if (painelNaveMae && !painelNaveMae.hidden) {
     renderizarInventarioNaveMae();
@@ -3254,8 +3656,19 @@ sairModalMineracao?.addEventListener("click", () => {
   if (!mineracaoEmAndamento) fecharModalMineracao();
 });
 coletarModalMineracao?.addEventListener("click", coletarMineracaoSelecionada);
+fecharModalEquiparArma?.addEventListener("click", fecharJanelaEquiparArma);
+modalEquiparArma?.addEventListener("click", (evento) => {
+  if (evento.target === modalEquiparArma) fecharJanelaEquiparArma();
+});
 
 window.addEventListener("keydown", (evento) => {
+  if (modalEquiparArma?.classList.contains("ativo") && evento.key === "Escape") {
+    evento.preventDefault();
+    evento.stopPropagation();
+    fecharJanelaEquiparArma();
+    return;
+  }
+
   if (modalMineracao?.classList.contains("ativo") && evento.key === "Escape") {
     evento.preventDefault();
     evento.stopPropagation();

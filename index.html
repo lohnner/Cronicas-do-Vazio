@@ -668,6 +668,15 @@
                     </button>
                   </article>
                 </div>
+
+                <section class="inventario-armas-tripulacao" aria-labelledby="tituloInventarioArmasTripulacao">
+                  <div class="inventario-armas-topo">
+                    <h2 id="tituloInventarioArmasTripulacao">Inventário de Armas</h2>
+                    <span>Equipamentos disponíveis</span>
+                  </div>
+
+                  <div class="inventario-armas-grade" id="inventarioArmasTripulacao"></div>
+                </section>
               </section>
             </div>
           </section>
@@ -797,7 +806,39 @@
 
                 <div class="fabrica-painel fabrica-painel-armas" id="fabricaPainelArmas" hidden="">
                   <h2>Armas</h2>
-                  <p>Em construção</p>
+
+                  <div class="receitas-fabrica receitas-armas-fabrica">
+                    <article class="receita-fabrica receita-arma" data-receita="arma_bt1">
+                      <img src="imagens/armas/BT-1.png" alt="BT-1">
+
+                      <div class="receita-fabrica-info">
+                        <h3>BT-1</h3>
+                        <p>1 barra de cobre + 1 barra de titânio geram 1 BT-1.</p>
+                        <p>Dano: 1 a 5</p>
+                        <p>Poder: +10</p>
+                        <p>Tempo: 10 minutos</p>
+                        <p class="estoque-receita" data-estoque="barra_cobre" data-rotulo="Barras de cobre">Barras de cobre: 0</p>
+                        <p class="estoque-receita" data-estoque="barra_titanio" data-rotulo="Barras de titânio">Barras de titânio: 0</p>
+                      </div>
+
+                      <div class="fabricacao-progresso">
+                        <div class="fabrica-status">
+                          <span data-status-receita="arma_bt1">Pronto para fabricar</span>
+                          <strong data-tempo-receita="arma_bt1">10min</strong>
+                        </div>
+
+                        <div class="barra-fabricacao">
+                          <div data-barra-receita="arma_bt1" style="width: 0%;"></div>
+                        </div>
+                      </div>
+
+                      <button type="button" class="botao-fabricar" data-iniciar-receita="arma_bt1">Fabricar</button>
+
+                      <button type="button" class="botao-coletar-fabricacao" data-coletar-receita="arma_bt1" hidden="">
+                        Coletar BT-1
+                      </button>
+                    </article>
+                  </div>
                 </div>
               </section>
             </div>
@@ -955,6 +996,25 @@
         <button type="button" id="botaoEquiparModuloNave" disabled="">Equipar na Nave</button>
         <button type="button" id="botaoDesequiparModuloNave" disabled="">Desequipar</button>
       </div>
+    </div>
+  </div>
+
+
+  <div class="modal-equipar-arma" id="modalEquiparArma" aria-hidden="true">
+    <div class="modal-equipar-arma-caixa" role="dialog" aria-modal="true" aria-labelledby="tituloModalEquiparArma">
+      <div class="modal-equipar-arma-topo">
+        <div>
+          <span class="modal-equipar-arma-subtitulo">ARMAMENTO</span>
+          <h2 id="tituloModalEquiparArma">Equipar arma</h2>
+          <p id="nomeArmaSelecionadaTripulacao">BT-1</p>
+        </div>
+
+        <button type="button" class="fechar-modal-equipar-arma" id="fecharModalEquiparArma" aria-label="Fechar seleção de arma">
+          &times;
+        </button>
+      </div>
+
+      <div class="opcoes-tripulantes-arma" id="opcoesTripulantesArma"></div>
     </div>
   </div>
 
