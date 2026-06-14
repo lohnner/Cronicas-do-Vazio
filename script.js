@@ -61,6 +61,7 @@ const PLANETA_INICIAL = "Nave Mãe";
 const SEGUNDOS_POR_MINUTO = 60;
 const TEMPO_MINERACAO_SEGUNDOS = 10 * SEGUNDOS_POR_MINUTO;
 const TEMPO_FABRICACAO_SEGUNDOS = 10 * SEGUNDOS_POR_MINUTO;
+const TEMPO_CHEGADA_BATALHA_SEGUNDOS = 5 * SEGUNDOS_POR_MINUTO;
 const IMAGEM_MINERIO_OURO = "imagens/mineracao/minerios/mineriodeouro.png";
 const IMAGEM_MINERIO_COBRE = "imagens/mineracao/minerios/mineriodecobre.png";
 const IMAGEM_MINERIO_TITANIO = "imagens/mineracao/minerios/mineriodetitanio.png";
@@ -71,6 +72,8 @@ const IMAGEM_ARMA_BT1 = "imagens/armas/BT-1.png";
 const IMAGEM_EVENTO_OURO = "imagens/mineracao/eventos/mineracaoouro.png";
 const IMAGEM_EVENTO_COBRE = "imagens/mineracao/eventos/mineracaocobre.png";
 const IMAGEM_EVENTO_TITANIO = "imagens/mineracao/eventos/mineracaotitanio.png";
+const IMAGEM_EVENTO_BATALHA_TERRA = "imagens/batalhas/eventos/terra1.png";
+const IMAGEM_INIMIGO_PIRATA1 = "imagens/batalhas/inimigos/pirata1.png";
 
 const IMAGEM_TERRA = "imagens/local/sistemasolar/sistemasolarlocalplanetaterra.png";
 const IMAGEM_MARTE = "imagens/local/sistemasolar/sistemasolarlocalplanetamarte.png";
@@ -457,6 +460,7 @@ const tipoCombustivelNave = document.getElementById("tipoCombustivelNave");
 const capacidadeCombustivelNave = document.getElementById("capacidadeCombustivelNave");
 const capacidadeUsoNave = document.getElementById("capacidadeUsoNave");
 const hpNave = document.getElementById("hpNave");
+const escudoNave = document.getElementById("escudoNave");
 const ataqueNave = document.getElementById("ataqueNave");
 const custoNave = document.getElementById("custoNave");
 const botaoAcaoNave = document.getElementById("botaoAcaoNave");
@@ -488,7 +492,10 @@ const NAVES = {
     capacidadeCombustivel: 80,
     capacidadeUso: 100,
     hp: 26,
-    ataque: 8,
+    escudo: 10,
+    ataque: 7,
+    ataqueMin: 1,
+    ataqueMax: 7,
     custo: 0
   },
   Aurora: {
@@ -502,7 +509,10 @@ const NAVES = {
     capacidadeCombustivel: 120,
     capacidadeUso: 140,
     hp: 53,
-    ataque: 16,
+    escudo: 25,
+    ataque: 13,
+    ataqueMin: 5,
+    ataqueMax: 13,
     custo: 100000
   }
 };
@@ -744,6 +754,16 @@ function formatarKm(valor) {
   return Math.round(valor).toLocaleString("pt-BR");
 }
 
+function formatarAtaqueNave(nave) {
+  const bonusAtaque = nave.bonusModulos?.ataque || 0;
+  const ataqueMinimo = Math.max(0, Math.floor((nave.ataqueMin ?? nave.ataque) + bonusAtaque));
+  const ataqueMaximo = Math.max(ataqueMinimo, Math.floor((nave.ataqueMax ?? nave.ataque) + bonusAtaque));
+
+  return ataqueMinimo === ataqueMaximo
+    ? String(ataqueMaximo)
+    : `${ataqueMinimo} a ${ataqueMaximo}`;
+}
+
 function atualizarAcaoNave() {
   if (!botaoAcaoNave) return;
 
@@ -798,7 +818,8 @@ function aplicarNaveSelecionada(nomeNave) {
   }
 
   if (hpNave) hpNave.textContent = String(nave.hp);
-  if (ataqueNave) ataqueNave.textContent = String(nave.ataque);
+  if (escudoNave) escudoNave.textContent = String(nave.escudo || 0);
+  if (ataqueNave) ataqueNave.textContent = formatarAtaqueNave(nave);
   if (inventarioNave) inventarioNave.textContent = String(nave.inventario);
   if (tipoCombustivelNave) tipoCombustivelNave.textContent = nave.combustivel;
   if (capacidadeCombustivelNave) capacidadeCombustivelNave.textContent = `${nave.capacidadeCombustivel} unidades`;
@@ -1383,7 +1404,7 @@ function normalizarItemInventario(item) {
       ...item,
       nome: item.nome || "Barra de Ouro",
       imagem: IMAGEM_BARRA_OURO,
-      preco: 50
+      preco: 80
     };
   }
 
@@ -1593,9 +1614,11 @@ atualizarEstadoVisualMineracao();
 const conteudoPlanetaNormal = document.getElementById("conteudoPlanetaNormal");
 const painelNaveMae = document.getElementById("painelNaveMae");
 const eventoMineracaoOuro = document.getElementById("eventoMineracaoOuro");
+const eventoBatalhaTerra = document.getElementById("eventoBatalhaTerra");
 const inventarioNaveMae = document.getElementById("inventarioNaveMae");
 const botaoReabastecer = document.getElementById("botaoReabastecer");
 const botaoReparar = document.getElementById("botaoReparar");
+const botaoRecarregarFabrica = document.getElementById("botaoRecarregarFabrica");
 
 const modalVenda = document.getElementById("modalVenda");
 const tituloModalVenda = document.getElementById("tituloModalVenda");
@@ -1743,6 +1766,10 @@ function atualizarInterfaceLocalizacao(local) {
 
   if (eventoMineracaoOuro) {
     eventoMineracaoOuro.hidden = !estaNaTerra;
+  }
+
+  if (eventoBatalhaTerra) {
+    eventoBatalhaTerra.hidden = !estaNaTerra;
   }
 
   if (estaNaNaveMae) {
@@ -1945,7 +1972,7 @@ function venderTodoOuro() {
 
   const inventario = carregarInventarioPioneira();
   const idItemVenda = itemVendaAtual?.id || "barra_ouro";
-  const precoItemVenda = itemVendaAtual?.preco || 50;
+  const precoItemVenda = itemVendaAtual?.preco || 80;
   const indice = inventario.findIndex((item) => item?.id === idItemVenda);
 
   if (indice < 0) {
@@ -1999,7 +2026,7 @@ function atualizarResumoVenda(ajustarCampo = false) {
 
   if (textoConfirmacaoVenda) {
     const nomeItem = itemVendaAtual?.nome || "Barra de Ouro";
-    const precoItem = itemVendaAtual?.preco || 50;
+    const precoItem = itemVendaAtual?.preco || 80;
 
     textoConfirmacaoVenda.textContent =
       `Voc\u00ea possui ${quantidadeMaximaOuroParaVenda} ${nomeItem}. Cada unidade vale ${precoItem} cr\u00e9ditos.`;
@@ -2016,7 +2043,7 @@ abrirVendaOuro = function(quantidade, item = null) {
   itemVendaAtual = {
     id: item?.id || "barra_ouro",
     nome: item?.nome || "Barra de Ouro",
-    preco: item?.preco || 50
+    preco: item?.preco || 80
   };
 
   if (tituloModalVenda) {
@@ -2066,7 +2093,7 @@ venderTodoOuro = function() {
 
   const inventario = carregarInventarioPioneira();
   const idItemVenda = itemVendaAtual?.id || "barra_ouro";
-  const precoItemVenda = itemVendaAtual?.preco || 50;
+  const precoItemVenda = itemVendaAtual?.preco || 80;
   const indice = inventario.findIndex((item) => item?.id === idItemVenda);
 
   if (indice < 0) {
@@ -2221,6 +2248,23 @@ atualizarPlanetaDaConta = function(local) {
   atualizarAbaLocal(local);
 };
 
+if (botaoRecarregarFabrica) {
+  botaoRecarregarFabrica.onclick = () => {
+    sincronizarEnergiaFabrica();
+
+    if (energiaFabrica >= 100) {
+      alert("A energia da fábrica já está em 100%.");
+      return;
+    }
+
+    if (!gastarCreditos(10)) return;
+
+    salvarEnergiaFabrica(100);
+    atualizarInterfaceFabrica();
+    alert("Energia da fábrica carregada.");
+  };
+}
+
 atualizarCreditosEmTodaInterface();
 atualizarAbaLocal(localStorage.getItem(CHAVE_PLANETA) || PLANETA_INICIAL);
 
@@ -2236,6 +2280,7 @@ const CHAVE_MISSAO_ATUAL = "cronicas_do_vazio_missao_atual";
 const CHAVE_MISSOES_CONCLUIDAS = "cronicas_do_vazio_missoes_concluidas";
 const CHAVE_INVENTARIO_ARMAS_TRIPULACAO = "cronicas_do_vazio_inventario_armas_tripulacao";
 const CHAVE_ARMAS_EQUIPADAS_TRIPULACAO = "cronicas_do_vazio_armas_equipadas_tripulacao";
+const CHAVE_EVENTO_BATALHA_TERRA = "cronicas_do_vazio_evento_batalha_terra";
 
 const ITEM_MINERIO_OURO = {
   id: "minerio_ouro",
@@ -2260,7 +2305,7 @@ const ITEM_BARRA_OURO = {
   id: "barra_ouro",
   nome: "Barra de Ouro",
   imagem: IMAGEM_BARRA_OURO,
-  preco: 50
+  preco: 80
 };
 
 const ITEM_BARRA_COBRE = {
@@ -2293,6 +2338,9 @@ const TRIPULANTES = {
     nome: "Lian",
     cargo: "Capitao Estelar",
     poder: 5,
+    hpMax: 20,
+    danoMin: 1,
+    danoMax: 2,
     imagem: "imagens/personagens/lian.png"
   }
 };
@@ -2368,6 +2416,7 @@ const imagemCapitaoTripulacao = document.getElementById("imagemCapitaoTripulacao
 const nomeCapitaoTripulacao = document.getElementById("nomeCapitaoTripulacao");
 const poderCapitaoTripulacao = document.getElementById("poderCapitaoTripulacao");
 const armaCapitao = document.getElementById("armaCapitao");
+const imagemArmaCapitao = document.getElementById("imagemArmaCapitao");
 const inventarioArmasTripulacao = document.getElementById("inventarioArmasTripulacao");
 const modalEquiparArma = document.getElementById("modalEquiparArma");
 const fecharModalEquiparArma = document.getElementById("fecharModalEquiparArma");
@@ -2401,6 +2450,25 @@ const iniciarModalMineracao = document.getElementById("iniciarModalMineracao");
 const sairModalMineracao = document.getElementById("sairModalMineracao");
 const coletarModalMineracao = document.getElementById("coletarModalMineracao");
 const botoesMineracao = document.querySelectorAll(".botao-minerar[data-mineracao]");
+const botaoAbrirEventoBatalhaTerra = document.getElementById("botaoAbrirEventoBatalhaTerra");
+const modalEventoBatalha = document.getElementById("modalEventoBatalha");
+const textoModalEventoBatalha = document.getElementById("textoModalEventoBatalha");
+const statusModalEventoBatalha = document.getElementById("statusModalEventoBatalha");
+const textoProgressoEventoBatalha = document.getElementById("textoProgressoEventoBatalha");
+const tempoEventoBatalha = document.getElementById("tempoEventoBatalha");
+const barraEventoBatalha = document.getElementById("barraEventoBatalha");
+const botaoIrMissaoBatalha = document.getElementById("botaoIrMissaoBatalha");
+const botaoIniciarBatalhaEvento = document.getElementById("botaoIniciarBatalhaEvento");
+const modalBatalha = document.getElementById("modalBatalha");
+const campoBatalha = document.getElementById("campoBatalha");
+const statusBatalha = document.getElementById("statusBatalha");
+const cardPlayerBatalha = document.getElementById("cardPlayerBatalha");
+const cardInimigoBatalha = document.getElementById("cardInimigoBatalha");
+const hpTextoPlayerBatalha = document.getElementById("hpTextoPlayerBatalha");
+const hpTextoInimigoBatalha = document.getElementById("hpTextoInimigoBatalha");
+const barraHpPlayerBatalha = document.getElementById("barraHpPlayerBatalha");
+const barraHpInimigoBatalha = document.getElementById("barraHpInimigoBatalha");
+const botaoConcluirBatalha = document.getElementById("botaoConcluirBatalha");
 
 let energiaFabrica = carregarEnergiaFabrica();
 let ultimoRenderEnergiaFabrica = 0;
@@ -2489,6 +2557,440 @@ const MINERACOES = {
   }
 };
 
+const EVENTO_BATALHA_TERRA = {
+  id: "contrabando_pessoas",
+  nome: "Contrabando de pessoas",
+  imagem: IMAGEM_EVENTO_BATALHA_TERRA,
+  tempoSegundos: TEMPO_CHEGADA_BATALHA_SEGUNDOS,
+  inimigo: {
+    nome: "Pirata",
+    imagem: IMAGEM_INIMIGO_PIRATA1,
+    hpMax: 15,
+    danoMin: 1,
+    danoMax: 3
+  }
+};
+
+let animacaoEventoBatalha = null;
+let batalhaAutomaticaAtiva = false;
+let estadoBatalhaAtual = null;
+let timerTurnoBatalha = null;
+
+function persistirEstadoEventoBatalhaTerra(estado) {
+  if (!estado || estado.status === "disponivel") {
+    localStorage.removeItem(CHAVE_EVENTO_BATALHA_TERRA);
+    return { status: "disponivel" };
+  }
+
+  localStorage.setItem(CHAVE_EVENTO_BATALHA_TERRA, JSON.stringify(estado));
+  return estado;
+}
+
+function normalizarEstadoEventoBatalhaTerra(estado) {
+  if (!estado || typeof estado !== "object") return { status: "disponivel" };
+
+  if (estado.status === "indo") {
+    const inicio = Number(estado.inicio);
+    const fim = Number(estado.fim);
+
+    if (!Number.isFinite(inicio) || !Number.isFinite(fim) || fim <= inicio) {
+      return { status: "disponivel" };
+    }
+
+    if (Date.now() >= fim) {
+      return {
+        status: "pronto",
+        inicio,
+        fim
+      };
+    }
+
+    return {
+      status: "indo",
+      inicio,
+      fim
+    };
+  }
+
+  if (estado.status === "pronto") {
+    return {
+      status: "pronto",
+      inicio: Number(estado.inicio) || Date.now(),
+      fim: Number(estado.fim) || Date.now()
+    };
+  }
+
+  if (estado.status === "batalha") {
+    return { status: "batalha" };
+  }
+
+  return { status: "disponivel" };
+}
+
+function carregarEstadoEventoBatalhaTerra() {
+  const salvo = localStorage.getItem(CHAVE_EVENTO_BATALHA_TERRA);
+  if (!salvo) return { status: "disponivel" };
+
+  try {
+    const estado = normalizarEstadoEventoBatalhaTerra(JSON.parse(salvo));
+    if (estado.status === "disponivel") {
+      localStorage.removeItem(CHAVE_EVENTO_BATALHA_TERRA);
+    } else {
+      localStorage.setItem(CHAVE_EVENTO_BATALHA_TERRA, JSON.stringify(estado));
+    }
+    return estado;
+  } catch {
+    localStorage.removeItem(CHAVE_EVENTO_BATALHA_TERRA);
+    return { status: "disponivel" };
+  }
+}
+
+function salvarEstadoEventoBatalhaTerra(estado) {
+  const normalizado = persistirEstadoEventoBatalhaTerra(
+    normalizarEstadoEventoBatalhaTerra(estado)
+  );
+  atualizarCardEventoBatalhaTerra();
+  return normalizado;
+}
+
+function eventoBatalhaTerraTravado() {
+  return carregarEstadoEventoBatalhaTerra().status !== "disponivel";
+}
+
+function atualizarCardEventoBatalhaTerra() {
+  if (!botaoAbrirEventoBatalhaTerra) return;
+
+  const estado = carregarEstadoEventoBatalhaTerra();
+
+  if (estado.status === "indo") {
+    botaoAbrirEventoBatalhaTerra.textContent = "A caminho";
+    return;
+  }
+
+  if (estado.status === "pronto") {
+    botaoAbrirEventoBatalhaTerra.textContent = "Batalha pronta";
+    return;
+  }
+
+  if (estado.status === "batalha") {
+    botaoAbrirEventoBatalhaTerra.textContent = "Em batalha";
+    return;
+  }
+
+  botaoAbrirEventoBatalhaTerra.textContent = "Abrir evento";
+}
+
+function atualizarModalEventoBatalhaTerra(estado = carregarEstadoEventoBatalhaTerra()) {
+  if (!modalEventoBatalha) return;
+
+  const duracao = EVENTO_BATALHA_TERRA.tempoSegundos * 1000;
+  const agora = Date.now();
+  let progresso = 0;
+
+  if (estado.status === "indo") {
+    progresso = Math.min(Math.max((agora - estado.inicio) / duracao, 0), 1);
+    const restante = Math.max(0, Math.ceil((estado.fim - agora) / 1000));
+
+    if (textoModalEventoBatalha) {
+      textoModalEventoBatalha.textContent = "A equipe esta indo ate o ponto de combate na Terra.";
+    }
+    if (statusModalEventoBatalha) statusModalEventoBatalha.textContent = "Rota em andamento";
+    if (textoProgressoEventoBatalha) textoProgressoEventoBatalha.textContent = "Indo para a missao";
+    if (tempoEventoBatalha) tempoEventoBatalha.textContent = formatarTempoCurto(restante);
+    if (botaoIrMissaoBatalha) botaoIrMissaoBatalha.hidden = true;
+    if (botaoIniciarBatalhaEvento) botaoIniciarBatalhaEvento.hidden = true;
+  } else if (estado.status === "pronto") {
+    progresso = 1;
+
+    if (textoModalEventoBatalha) {
+      textoModalEventoBatalha.textContent = "O alvo foi localizado. A batalha pode comecar.";
+    }
+    if (statusModalEventoBatalha) statusModalEventoBatalha.textContent = "Pronto para batalha";
+    if (textoProgressoEventoBatalha) textoProgressoEventoBatalha.textContent = "Chegada concluida";
+    if (tempoEventoBatalha) tempoEventoBatalha.textContent = "Pronto";
+    if (botaoIrMissaoBatalha) botaoIrMissaoBatalha.hidden = true;
+    if (botaoIniciarBatalhaEvento) botaoIniciarBatalhaEvento.hidden = false;
+  } else {
+    if (textoModalEventoBatalha) {
+      textoModalEventoBatalha.textContent = "Uma rota clandestina foi detectada na Terra.";
+    }
+    if (statusModalEventoBatalha) statusModalEventoBatalha.textContent = "Tempo ate o combate: 5min";
+    if (textoProgressoEventoBatalha) textoProgressoEventoBatalha.textContent = "Pronto para iniciar";
+    if (tempoEventoBatalha) tempoEventoBatalha.textContent = "5min";
+    if (botaoIrMissaoBatalha) botaoIrMissaoBatalha.hidden = false;
+    if (botaoIniciarBatalhaEvento) botaoIniciarBatalhaEvento.hidden = true;
+  }
+
+  if (barraEventoBatalha) barraEventoBatalha.style.width = `${progresso * 100}%`;
+}
+
+function iniciarMonitorEventoBatalhaTerra() {
+  if (animacaoEventoBatalha) cancelAnimationFrame(animacaoEventoBatalha);
+
+  function atualizar() {
+    if (!modalEventoBatalha?.classList.contains("ativo")) {
+      animacaoEventoBatalha = null;
+      return;
+    }
+
+    const estado = carregarEstadoEventoBatalhaTerra();
+    atualizarModalEventoBatalhaTerra(estado);
+
+    if (estado.status !== "indo") {
+      animacaoEventoBatalha = null;
+      return;
+    }
+
+    animacaoEventoBatalha = requestAnimationFrame(atualizar);
+  }
+
+  animacaoEventoBatalha = requestAnimationFrame(atualizar);
+}
+
+function abrirModalEventoBatalhaTerra() {
+  const estado = carregarEstadoEventoBatalhaTerra();
+  const localAtual = localStorage.getItem(CHAVE_PLANETA) || PLANETA_INICIAL;
+
+  if (estado.status === "disponivel" && localAtual !== "Terra") return;
+
+  modalEventoBatalha?.classList.add("ativo");
+  modalEventoBatalha?.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-batalha-travada");
+
+  atualizarModalEventoBatalhaTerra(estado);
+  if (estado.status === "indo") iniciarMonitorEventoBatalhaTerra();
+}
+
+function esconderModalEventoBatalhaTerra() {
+  if (animacaoEventoBatalha) cancelAnimationFrame(animacaoEventoBatalha);
+  animacaoEventoBatalha = null;
+  modalEventoBatalha?.classList.remove("ativo");
+  modalEventoBatalha?.setAttribute("aria-hidden", "true");
+
+  if (!modalBatalha?.classList.contains("ativo")) {
+    document.body.classList.remove("modal-batalha-travada");
+  }
+}
+
+function iniciarIdaMissaoBatalhaTerra() {
+  const agora = Date.now();
+  const estado = salvarEstadoEventoBatalhaTerra({
+    status: "indo",
+    inicio: agora,
+    fim: agora + (EVENTO_BATALHA_TERRA.tempoSegundos * 1000)
+  });
+
+  atualizarModalEventoBatalhaTerra(estado);
+  iniciarMonitorEventoBatalhaTerra();
+}
+
+function sortearInteiro(minimo, maximo) {
+  const min = Math.ceil(minimo);
+  const max = Math.floor(maximo);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function criarEstadoBatalhaTerra() {
+  const danoLian = obterDanoLian();
+
+  return {
+    player: {
+      nome: TRIPULANTES.lian.nome,
+      imagem: TRIPULANTES.lian.imagem,
+      hp: TRIPULANTES.lian.hpMax,
+      hpMax: TRIPULANTES.lian.hpMax,
+      danoMin: danoLian.min,
+      danoMax: danoLian.max
+    },
+    inimigo: {
+      nome: EVENTO_BATALHA_TERRA.inimigo.nome,
+      imagem: EVENTO_BATALHA_TERRA.inimigo.imagem,
+      hp: EVENTO_BATALHA_TERRA.inimigo.hpMax,
+      hpMax: EVENTO_BATALHA_TERRA.inimigo.hpMax,
+      danoMin: EVENTO_BATALHA_TERRA.inimigo.danoMin,
+      danoMax: EVENTO_BATALHA_TERRA.inimigo.danoMax
+    },
+    turno: "player"
+  };
+}
+
+function atualizarHpCombatente(chave) {
+  if (!estadoBatalhaAtual) return;
+
+  const combatente = estadoBatalhaAtual[chave];
+  const texto = chave === "player" ? hpTextoPlayerBatalha : hpTextoInimigoBatalha;
+  const barra = chave === "player" ? barraHpPlayerBatalha : barraHpInimigoBatalha;
+  const percentual = Math.max(0, Math.min(100, (combatente.hp / combatente.hpMax) * 100));
+
+  if (texto) texto.textContent = `${combatente.hp} / ${combatente.hpMax}`;
+  if (barra) barra.style.width = `${percentual}%`;
+}
+
+function renderizarBatalhaTerra() {
+  if (!estadoBatalhaAtual) return;
+
+  atualizarHpCombatente("player");
+  atualizarHpCombatente("inimigo");
+}
+
+function pontoAleatorioNoCard(elemento) {
+  const campoRect = campoBatalha.getBoundingClientRect();
+  const rect = elemento.getBoundingClientRect();
+  const margemX = rect.width * 0.22;
+  const margemY = rect.height * 0.22;
+
+  return {
+    x: rect.left - campoRect.left + margemX + Math.random() * Math.max(1, rect.width - margemX * 2),
+    y: rect.top - campoRect.top + margemY + Math.random() * Math.max(1, rect.height - margemY * 2)
+  };
+}
+
+function mostrarTextoDanoBatalha(ponto, dano) {
+  if (!campoBatalha) return;
+
+  const texto = document.createElement("div");
+  texto.className = "dano-batalha";
+  texto.textContent = `-${dano}`;
+  texto.style.left = `${ponto.x}px`;
+  texto.style.top = `${ponto.y}px`;
+  campoBatalha.appendChild(texto);
+  setTimeout(() => texto.remove(), 900);
+}
+
+function animarTiroLaser(atacante, alvo, dano, aoAcertar) {
+  return new Promise((resolver) => {
+    if (!campoBatalha || !atacante || !alvo) {
+      aoAcertar();
+      resolver();
+      return;
+    }
+
+    const origem = pontoAleatorioNoCard(atacante);
+    const destino = pontoAleatorioNoCard(alvo);
+    const distancia = Math.hypot(destino.x - origem.x, destino.y - origem.y);
+    const angulo = Math.atan2(destino.y - origem.y, destino.x - origem.x);
+    const laser = document.createElement("div");
+
+    laser.className = "tiro-laser";
+    laser.style.left = `${origem.x}px`;
+    laser.style.top = `${origem.y}px`;
+    laser.style.width = `${distancia}px`;
+    laser.style.transform = `rotate(${angulo}rad)`;
+
+    atacante.classList.add("atacando");
+    campoBatalha.appendChild(laser);
+
+    setTimeout(() => {
+      aoAcertar();
+      alvo.classList.add("atingido");
+      mostrarTextoDanoBatalha(destino, dano);
+    }, 520);
+
+    setTimeout(() => {
+      atacante.classList.remove("atacando");
+      alvo.classList.remove("atingido");
+      laser.remove();
+      resolver();
+    }, 920);
+  });
+}
+
+function encerrarBatalhaTerra(vencedor) {
+  batalhaAutomaticaAtiva = false;
+  if (timerTurnoBatalha) clearTimeout(timerTurnoBatalha);
+  timerTurnoBatalha = null;
+
+  if (statusBatalha) {
+    statusBatalha.textContent =
+      vencedor === "player"
+        ? "Vitoria. O contrabando foi interrompido."
+        : "Derrota. Lian foi abatido na operacao.";
+  }
+
+  if (botaoConcluirBatalha) {
+    botaoConcluirBatalha.hidden = false;
+    botaoConcluirBatalha.textContent =
+      vencedor === "player" ? "Concluir batalha" : "Retornar";
+  }
+}
+
+async function executarTurnoBatalhaTerra(lado) {
+  if (!batalhaAutomaticaAtiva || !estadoBatalhaAtual) return;
+
+  const atacanteChave = lado === "player" ? "player" : "inimigo";
+  const alvoChave = atacanteChave === "player" ? "inimigo" : "player";
+  const atacante = estadoBatalhaAtual[atacanteChave];
+  const alvo = estadoBatalhaAtual[alvoChave];
+  const atacanteCard = atacanteChave === "player" ? cardPlayerBatalha : cardInimigoBatalha;
+  const alvoCard = alvoChave === "player" ? cardPlayerBatalha : cardInimigoBatalha;
+  const dano = sortearInteiro(atacante.danoMin, atacante.danoMax);
+
+  if (statusBatalha) statusBatalha.textContent = `${atacante.nome} disparou.`;
+
+  await animarTiroLaser(atacanteCard, alvoCard, dano, () => {
+    alvo.hp = Math.max(0, alvo.hp - dano);
+    atualizarHpCombatente(alvoChave);
+  });
+
+  if (alvo.hp <= 0) {
+    encerrarBatalhaTerra(atacanteChave);
+    return;
+  }
+
+  const proximoTurno = atacanteChave === "player" ? "inimigo" : "player";
+  if (statusBatalha) {
+    statusBatalha.textContent =
+      proximoTurno === "player" ? "Lian prepara o proximo disparo." : "O pirata prepara o contra-ataque.";
+  }
+
+  timerTurnoBatalha = setTimeout(() => executarTurnoBatalhaTerra(proximoTurno), 2000);
+}
+
+function abrirModalBatalhaTerra() {
+  salvarEstadoEventoBatalhaTerra({ status: "batalha" });
+  esconderModalEventoBatalhaTerra();
+
+  estadoBatalhaAtual = criarEstadoBatalhaTerra();
+  batalhaAutomaticaAtiva = true;
+
+  if (botaoConcluirBatalha) botaoConcluirBatalha.hidden = true;
+  if (statusBatalha) statusBatalha.textContent = "Lian inicia o ataque.";
+
+  modalBatalha?.classList.add("ativo");
+  modalBatalha?.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-batalha-travada");
+
+  renderizarBatalhaTerra();
+
+  if (timerTurnoBatalha) clearTimeout(timerTurnoBatalha);
+  timerTurnoBatalha = setTimeout(() => executarTurnoBatalhaTerra("player"), 450);
+}
+
+function concluirModalBatalhaTerra() {
+  batalhaAutomaticaAtiva = false;
+  estadoBatalhaAtual = null;
+  if (timerTurnoBatalha) clearTimeout(timerTurnoBatalha);
+  timerTurnoBatalha = null;
+
+  salvarEstadoEventoBatalhaTerra({ status: "disponivel" });
+
+  modalBatalha?.classList.remove("ativo");
+  modalBatalha?.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("modal-batalha-travada");
+}
+
+function retomarEventoBatalhaTerra() {
+  atualizarCardEventoBatalhaTerra();
+
+  const estado = carregarEstadoEventoBatalhaTerra();
+
+  if (estado.status === "indo" || estado.status === "pronto") {
+    abrirModalEventoBatalhaTerra();
+  } else if (estado.status === "batalha") {
+    abrirModalBatalhaTerra();
+  }
+}
+
 mineracaoPronta = carregarMineracaoPronta();
 ouroProntoParaColeta = !!mineracaoPronta;
 
@@ -2515,12 +3017,31 @@ function calcularPoderTotal() {
   return naveEquipadaAtual().poder + calcularPoderTripulacao();
 }
 
+function obterDanoLian() {
+  const armaEquipada = normalizarArmaTripulacao(ARMAS_EQUIPADAS.capitao);
+
+  if (armaEquipada) {
+    return {
+      min: armaEquipada.danoMin,
+      max: armaEquipada.danoMax,
+      origem: armaEquipada.nome
+    };
+  }
+
+  return {
+    min: TRIPULANTES.lian.danoMin,
+    max: TRIPULANTES.lian.danoMax,
+    origem: "Base"
+  };
+}
+
 function atualizarSistemaTripulacao() {
   const nave = naveEquipadaAtual();
   const poderTripulacao = calcularPoderTripulacao();
   const poderTotal = calcularPoderTotal();
   const imagemCapitao = TRIPULANTES.lian.imagem;
   const armaEquipadaCapitao = ARMAS_EQUIPADAS.capitao;
+  const danoLian = obterDanoLian();
 
   if (imagemPerfil) {
     if (imagemPerfil.getAttribute("src") !== imagemCapitao) {
@@ -2550,7 +3071,7 @@ function atualizarSistemaTripulacao() {
 
   if (poderCapitaoTripulacao) {
     poderCapitaoTripulacao.textContent =
-      `Poder ${TRIPULANTES.lian.poder + (armaEquipadaCapitao?.poder || 0)}`;
+      `HP ${TRIPULANTES.lian.hpMax} | Dano ${danoLian.min} a ${danoLian.max}`;
   }
 
   if (armaCapitao) {
@@ -2558,11 +3079,26 @@ function atualizarSistemaTripulacao() {
     const detalheArma = armaCapitao.querySelector("small");
 
     armaCapitao.classList.toggle("equipada", !!armaEquipadaCapitao);
+    armaCapitao.setAttribute(
+      "aria-label",
+      armaEquipadaCapitao
+        ? `${armaEquipadaCapitao.nome} equipada. Clique para desequipar.`
+        : "Nenhuma arma equipada."
+    );
     if (nomeArma) nomeArma.textContent = armaEquipadaCapitao?.nome || "Vazia";
     if (detalheArma) {
       detalheArma.textContent = armaEquipadaCapitao
         ? `Dano ${armaEquipadaCapitao.danoMin} a ${armaEquipadaCapitao.danoMax} | Poder +${armaEquipadaCapitao.poder}`
-        : "Poder 0";
+        : `Dano base ${TRIPULANTES.lian.danoMin} a ${TRIPULANTES.lian.danoMax}`;
+    }
+    if (imagemArmaCapitao) {
+      imagemArmaCapitao.hidden = !armaEquipadaCapitao;
+      if (armaEquipadaCapitao) {
+        imagemArmaCapitao.src = armaEquipadaCapitao.imagem;
+        imagemArmaCapitao.alt = armaEquipadaCapitao.nome;
+      } else {
+        imagemArmaCapitao.removeAttribute("alt");
+      }
     }
   }
 
@@ -2627,6 +3163,20 @@ function equiparArmaSelecionada(slotTripulacao) {
     [slotTripulacao]: arma
   });
   fecharJanelaEquiparArma();
+}
+
+function desequiparArmaTripulacao(slotTripulacao) {
+  const armaEquipada = normalizarArmaTripulacao(ARMAS_EQUIPADAS[slotTripulacao]);
+  if (!armaEquipada) return;
+
+  const inventario = carregarInventarioArmas();
+  inventario.push(armaEquipada);
+
+  salvarInventarioArmas(inventario);
+  salvarArmasEquipadas({
+    ...ARMAS_EQUIPADAS,
+    [slotTripulacao]: null
+  });
 }
 
 function renderizarOpcoesTripulantesArma() {
@@ -3320,8 +3870,7 @@ function sincronizarEnergiaFabrica() {
     minutosFabricando = Math.max(0, ultimoMinuto - primeiroMinuto + 1);
   }
 
-  const minutosCarregando = minutosPassados - minutosFabricando;
-  energiaFabrica += minutosCarregando - minutosFabricando;
+  energiaFabrica -= minutosFabricando;
   energiaFabrica = Math.max(0, Math.min(100, energiaFabrica));
   atualizadoEm += minutosPassados * 60000;
 
@@ -3602,6 +4151,11 @@ atualizarEstadoVisualMineracao = function() {
 
 const abrirConfirmacaoViagemSemMineracao = abrirConfirmacaoViagem;
 abrirConfirmacaoViagem = function(destino) {
+  if (eventoBatalhaTerraTravado()) {
+    alert("Conclua o evento de batalha antes de mudar de localizacao.");
+    return;
+  }
+
   if (mineracaoEmAndamento) {
     alert("Aguarde o fim da mineração antes de mudar de localização.");
     return;
@@ -3612,6 +4166,11 @@ abrirConfirmacaoViagem = function(destino) {
 
 const iniciarViagemSemMineracao = iniciarViagem;
 iniciarViagem = function(destino) {
+  if (eventoBatalhaTerraTravado()) {
+    alert("Conclua o evento de batalha antes de viajar.");
+    return;
+  }
+
   if (mineracaoEmAndamento) {
     alert("Aguarde o fim da mineração antes de viajar.");
     return;
@@ -3633,6 +4192,7 @@ if (imagemPerfil) {
 
 botaoFabricarBarra?.addEventListener("click", iniciarFabricacaoBarraOuro);
 botaoColetarFabricacao?.addEventListener("click", coletarFabricacaoBarraOuro);
+armaCapitao?.addEventListener("click", () => desequiparArmaTripulacao("capitao"));
 
 botoesCategoriaFabrica.forEach((botao) => {
   botao.addEventListener("click", () => atualizarCategoriaFabrica(botao.dataset.fabricaCategoria));
@@ -3656,12 +4216,28 @@ sairModalMineracao?.addEventListener("click", () => {
   if (!mineracaoEmAndamento) fecharModalMineracao();
 });
 coletarModalMineracao?.addEventListener("click", coletarMineracaoSelecionada);
+botaoAbrirEventoBatalhaTerra?.addEventListener("click", abrirModalEventoBatalhaTerra);
+botaoIrMissaoBatalha?.addEventListener("click", iniciarIdaMissaoBatalhaTerra);
+botaoIniciarBatalhaEvento?.addEventListener("click", abrirModalBatalhaTerra);
+botaoConcluirBatalha?.addEventListener("click", concluirModalBatalhaTerra);
 fecharModalEquiparArma?.addEventListener("click", fecharJanelaEquiparArma);
 modalEquiparArma?.addEventListener("click", (evento) => {
   if (evento.target === modalEquiparArma) fecharJanelaEquiparArma();
 });
 
 window.addEventListener("keydown", (evento) => {
+  if (
+    evento.key === "Escape" &&
+    (
+      modalEventoBatalha?.classList.contains("ativo") ||
+      modalBatalha?.classList.contains("ativo")
+    )
+  ) {
+    evento.preventDefault();
+    evento.stopPropagation();
+    return;
+  }
+
   if (modalEquiparArma?.classList.contains("ativo") && evento.key === "Escape") {
     evento.preventDefault();
     evento.stopPropagation();
@@ -3686,4 +4262,5 @@ if (fabricacaoPronta) {
 }
 
 renderizarTripulacaoERecursos();
+retomarEventoBatalhaTerra();
 requestAnimationFrame(atualizarEnergiaFabrica);

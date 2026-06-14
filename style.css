@@ -2476,6 +2476,57 @@ body.modal-aberto {
   cursor: not-allowed;
 }
 
+.grade-eventos-batalha {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.evento-batalha {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid rgba(255,255,255,0.075);
+  border-radius: 12px;
+  background:
+    linear-gradient(145deg, rgba(80,181,214,0.05), rgba(0,0,0,0.05)),
+    #182029;
+}
+
+.imagem-evento-batalha {
+  width: 135px;
+  height: 135px;
+  object-fit: contain;
+  border-radius: 10px;
+  background: rgba(10,15,20,0.45);
+}
+
+.evento-batalha-info {
+  width: 100%;
+  margin-top: 12px;
+  text-align: center;
+}
+
+.evento-batalha-info h3 {
+  margin-bottom: 8px;
+  color: #ffffff;
+  font-family: var(--fonte-jogo);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.botao-evento-batalha {
+  width: 100%;
+  min-height: 42px;
+  margin-top: 14px;
+  border: 1px solid rgba(80,181,214,0.38);
+  border-radius: 10px;
+  background: linear-gradient(180deg, #287d94, #1c596d);
+  color: #ffffff;
+  font-family: var(--fonte-jogo);
+  font-size: 10px;
+  cursor: pointer;
+}
+
 /* ===== ITEM DE OURO NO INVENTÁRIO ===== */
 
 .slot-inventario.preenchido {
@@ -3331,6 +3382,363 @@ body.modal-mineracao-travada {
   cursor: not-allowed;
 }
 
+.modal-evento-batalha,
+.modal-batalha {
+  position: fixed;
+  inset: 0;
+  z-index: 82;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(1,6,12,0.88);
+  backdrop-filter: blur(5px);
+}
+
+.modal-batalha {
+  z-index: 86;
+}
+
+.modal-evento-batalha.ativo,
+.modal-batalha.ativo {
+  display: flex;
+}
+
+.modal-evento-batalha-caixa,
+.modal-batalha-caixa {
+  width: min(760px, calc(100vw - 32px));
+  max-height: min(720px, calc(100vh - 32px));
+  overflow-y: auto;
+  padding: 24px;
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 15px;
+  background: #1b2128;
+  box-shadow: 0 24px 70px rgba(0,0,0,0.58);
+}
+
+.modal-batalha-caixa {
+  width: min(940px, calc(100vw - 32px));
+}
+
+.modal-evento-batalha-subtitulo,
+.modal-batalha-subtitulo {
+  color: #7fd8f1;
+  font-family: var(--fonte-jogo);
+  font-size: 12px;
+  letter-spacing: 1.3px;
+}
+
+.modal-evento-batalha-caixa h2,
+.modal-batalha-caixa h2 {
+  margin: 8px 0 18px;
+  color: #ffffff;
+  font-family: var(--fonte-jogo);
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.modal-evento-batalha-corpo {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.modal-evento-batalha-corpo img {
+  width: 210px;
+  height: 210px;
+  object-fit: contain;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  background: rgba(10,15,20,0.45);
+}
+
+.modal-evento-batalha-info {
+  display: grid;
+  align-content: center;
+  gap: 10px;
+}
+
+.modal-evento-batalha-info p,
+.batalha-status-texto {
+  margin: 0;
+  padding: 13px 14px;
+  border: 1px solid rgba(255,255,255,0.075);
+  border-radius: 10px;
+  background: #182029;
+  color: #ffffff;
+  font-family: var(--fonte-jogo);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.modal-evento-batalha-progresso {
+  margin-top: 18px;
+}
+
+.modal-evento-batalha-status {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.modal-evento-batalha-status span,
+.modal-evento-batalha-status strong {
+  color: #ffffff;
+  font-family: var(--fonte-jogo);
+  font-size: 13px;
+}
+
+.modal-evento-batalha-status span {
+  color: var(--texto-fraco);
+}
+
+.barra-modal-evento-batalha {
+  width: 100%;
+  height: 13px;
+  overflow: hidden;
+  border: 1px solid rgba(80,181,214,0.34);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.025);
+  box-shadow: inset 0 0 8px rgba(0,0,0,0.28);
+}
+
+.barra-modal-evento-batalha > div {
+  width: 0%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #1d7189, #5ad2f0, #f2d270);
+  box-shadow: 0 0 10px rgba(90,210,240,0.30);
+}
+
+.botao-ir-missao-batalha,
+.botao-iniciar-batalha-evento,
+.botao-concluir-batalha {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 18px;
+  border-radius: 10px;
+  color: #ffffff;
+  font-family: var(--fonte-jogo);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.botao-ir-missao-batalha,
+.botao-iniciar-batalha-evento {
+  border: 1px solid rgba(80,181,214,0.40);
+  background: linear-gradient(180deg, #2f9db8, #1c6378);
+}
+
+.botao-concluir-batalha {
+  border: 1px solid rgba(115,205,145,0.35);
+  background: linear-gradient(180deg, #4eaa70, #34784e);
+}
+
+.batalha-status-texto {
+  margin-bottom: 18px;
+  text-align: center;
+}
+
+.campo-batalha {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  min-height: 360px;
+  overflow: hidden;
+}
+
+.combatente-card {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(180px, 1fr) auto auto;
+  gap: 10px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid rgba(255,255,255,0.085);
+  border-radius: 14px;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,0.03), rgba(0,0,0,0.08)),
+    #171f28;
+  box-shadow: inset 0 0 24px rgba(0,0,0,0.16);
+}
+
+.combatente-card > span {
+  color: #7fd8f1;
+  font-family: var(--fonte-jogo);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.combatente-card img {
+  width: 100%;
+  height: 210px;
+  object-fit: contain;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  background: rgba(5,9,14,0.42);
+}
+
+.combatente-card h3 {
+  color: #ffffff;
+  font-family: var(--fonte-jogo);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.hp-combatente {
+  display: grid;
+  gap: 7px;
+}
+
+.hp-combatente-topo {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.hp-combatente-topo span,
+.hp-combatente-topo strong {
+  color: #ffffff;
+  font-family: var(--fonte-jogo);
+  font-size: 12px;
+}
+
+.hp-combatente-topo span {
+  color: var(--texto-fraco);
+}
+
+.barra-hp-combatente {
+  width: 100%;
+  height: 13px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.026);
+}
+
+.barra-hp-combatente > div {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  transition: width 0.18s ease-out;
+}
+
+#barraHpPlayerBatalha {
+  background: linear-gradient(90deg, #2c9d67, #65d58a);
+  box-shadow: 0 0 12px rgba(101,213,138,0.25);
+}
+
+#barraHpInimigoBatalha {
+  background: linear-gradient(90deg, #a23c42, #f06955);
+  box-shadow: 0 0 12px rgba(240,105,85,0.24);
+}
+
+.combatente-card.atacando {
+  border-color: rgba(90,210,240,0.54);
+  box-shadow: 0 0 24px rgba(90,210,240,0.18);
+}
+
+.combatente-card.atingido {
+  animation: impactoBatalha 0.32s ease;
+}
+
+.tiro-laser {
+  position: absolute;
+  z-index: 4;
+  height: 5px;
+  pointer-events: none;
+  transform-origin: left center;
+  filter: drop-shadow(0 0 8px rgba(111,233,255,0.85));
+}
+
+.tiro-laser::before,
+.tiro-laser::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  transform-origin: left center;
+  animation: disparoLaser 0.58s ease-out forwards;
+}
+
+.tiro-laser::before {
+  background: linear-gradient(90deg, rgba(255,255,255,0), #ffffff 18%, #76ecff 48%, #f2d270 82%, rgba(242,210,112,0));
+}
+
+.tiro-laser::after {
+  height: 13px;
+  top: -4px;
+  background: linear-gradient(90deg, rgba(90,210,240,0), rgba(90,210,240,0.28), rgba(242,210,112,0));
+  filter: blur(5px);
+}
+
+.dano-batalha {
+  position: absolute;
+  z-index: 5;
+  color: #ffffff;
+  font-family: var(--fonte-jogo);
+  font-size: 22px;
+  font-weight: 700;
+  text-shadow:
+    0 0 8px rgba(240,105,85,0.86),
+    0 2px 8px rgba(0,0,0,0.65);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  animation: danoBatalha 0.9s ease-out forwards;
+}
+
+@keyframes disparoLaser {
+  0% {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+
+  35% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.92;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes danoBatalha {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -20%) scale(0.8);
+  }
+
+  22% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -112%) scale(1);
+  }
+}
+
+@keyframes impactoBatalha {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  35% {
+    transform: translateX(-5px);
+  }
+
+  70% {
+    transform: translateX(5px);
+  }
+}
+
 @media (max-width: 700px) {
   .modal-mineracao-corpo {
     grid-template-columns: 1fr;
@@ -3339,6 +3747,17 @@ body.modal-mineracao-travada {
   .modal-mineracao-corpo img {
     width: 100%;
     height: min(220px, 50vw);
+  }
+
+  .modal-evento-batalha-corpo,
+  .campo-batalha {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-evento-batalha-corpo img,
+  .combatente-card img {
+    width: 100%;
+    height: min(220px, 52vw);
   }
 }
 
@@ -3655,7 +4074,7 @@ input {
   width: 100%;
   min-height: 58px;
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr;
   align-items: center;
   gap: 6px 12px;
   margin-top: 16px;
@@ -3665,6 +4084,27 @@ input {
   background: rgba(10,16,23,0.22);
   color: #ffffff;
   font-family: var(--fonte-jogo);
+  cursor: pointer;
+  text-align: left;
+}
+
+.slot-arma.equipada {
+  grid-template-columns: 58px minmax(0, 1fr);
+}
+
+.slot-arma-imagem {
+  width: 58px;
+  height: 52px;
+  object-fit: contain;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  background: rgba(0,0,0,0.24);
+}
+
+.slot-arma-info {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
 }
 
 .slot-arma strong {
@@ -3673,7 +4113,7 @@ input {
 }
 
 .slot-arma small {
-  grid-column: 1 / -1;
+  line-height: 1.3;
 }
 
 .slot-arma.equipada {
@@ -3683,6 +4123,10 @@ input {
     linear-gradient(180deg, rgba(209,164,52,0.10), rgba(0,0,0,0.04)),
     rgba(10,16,23,0.30);
   box-shadow: 0 0 16px rgba(209,164,52,0.10);
+}
+
+.slot-arma:disabled {
+  cursor: not-allowed;
 }
 
 .inventario-armas-tripulacao {
@@ -4706,6 +5150,7 @@ input {
   }
 
   .imagem-evento-mineracao,
+  .imagem-evento-batalha,
   .receita-fabrica > img,
   .receitas-fabrica .receita-fabrica > img {
     justify-self: center;
@@ -4732,6 +5177,7 @@ input {
   .planeta-info-linha span,
   .planeta-info-linha strong,
   .evento-mineracao-info h3,
+  .evento-batalha-info h3,
   .evento-mineracao-info p,
   .mineracao-status span,
   .mineracao-status strong {
@@ -4749,6 +5195,7 @@ input {
 
   .botao-minerar,
   .botao-coletar-ouro,
+  .botao-evento-batalha,
   .botao-modulos-nave,
   .botao-fabricar,
   .botao-coletar-fabricacao,
@@ -4757,7 +5204,10 @@ input {
   .modal-modulos-nave-acoes button,
   .botao-iniciar-modal-mineracao,
   .botao-sair-modal-mineracao,
-  .botao-coletar-modal-mineracao {
+  .botao-coletar-modal-mineracao,
+  .botao-ir-missao-batalha,
+  .botao-iniciar-batalha-evento,
+  .botao-concluir-batalha {
     min-height: 44px;
     height: auto;
     font-size: 12px;
@@ -4769,7 +5219,9 @@ input {
   .modal-modulos-nave,
   .modal-equipar-arma,
   .modal-venda,
-  .modal-mineracao {
+  .modal-mineracao,
+  .modal-evento-batalha,
+  .modal-batalha {
     padding: 12px;
   }
 
@@ -4779,18 +5231,24 @@ input {
   .modal-modulos-nave-caixa,
   .modal-equipar-arma-caixa,
   .modal-venda-caixa,
-  .modal-mineracao-caixa {
+  .modal-mineracao-caixa,
+  .modal-evento-batalha-caixa,
+  .modal-batalha-caixa {
     width: calc(100vw - 24px);
     max-height: calc(100dvh - 24px);
     overflow-y: auto;
     border-radius: 12px;
   }
 
-  .modal-mineracao-corpo {
+  .modal-mineracao-corpo,
+  .modal-evento-batalha-corpo,
+  .campo-batalha {
     grid-template-columns: 1fr;
   }
 
-  .modal-mineracao-corpo img {
+  .modal-mineracao-corpo img,
+  .modal-evento-batalha-corpo img,
+  .combatente-card img {
     width: 100%;
     height: min(220px, 52vw);
   }

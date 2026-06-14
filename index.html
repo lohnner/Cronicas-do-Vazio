@@ -280,8 +280,13 @@
                     </div>
 
                     <div class="informacao-nave-linha">
+                      <span>Escudo</span>
+                      <strong id="escudoNave">10</strong>
+                    </div>
+
+                    <div class="informacao-nave-linha">
                       <span>Ataque</span>
-                      <strong id="ataqueNave">8</strong>
+                      <strong id="ataqueNave">1 a 7</strong>
                     </div>
 
                     <div class="informacao-nave-linha">
@@ -564,6 +569,20 @@
 
                   <section class="coluna-planeta ataque-coluna">
                     <h2>Ataque</h2>
+
+                    <div class="grade-eventos-planeta grade-eventos-batalha">
+                      <article class="evento-batalha" id="eventoBatalhaTerra">
+                        <img class="imagem-evento-batalha" src="imagens/batalhas/eventos/terra1.png" alt="Contrabando de pessoas">
+
+                        <div class="evento-batalha-info">
+                          <h3>Contrabando de pessoas</h3>
+                        </div>
+
+                        <button type="button" class="botao-evento-batalha" id="botaoAbrirEventoBatalhaTerra">
+                          Abrir evento
+                        </button>
+                      </article>
+                    </div>
                   </section>
                 </div>
 
@@ -595,6 +614,16 @@
                         <span>Restaura 100% da integridade da nave equipada.</span>
                       </div>
                       <button type="button" id="botaoReparar">
+                        10 créditos
+                      </button>
+                    </article>
+
+                    <article class="servico-nave-mae">
+                      <div>
+                        <strong>Carregar energia da fábrica</strong>
+                        <span>Completa 100% da energia da fábrica.</span>
+                      </div>
+                      <button type="button" id="botaoRecarregarFabrica">
                         10 créditos
                       </button>
                     </article>
@@ -640,9 +669,12 @@
                     </div>
 
                     <button type="button" class="slot-arma" id="armaCapitao">
-                      <span>Arma</span>
-                      <strong>Vazia</strong>
-                      <small>Poder 0</small>
+                      <img class="slot-arma-imagem" id="imagemArmaCapitao" src="imagens/armas/BT-1.png" alt="" hidden="">
+                      <div class="slot-arma-info">
+                        <span>Arma</span>
+                        <strong>Vazia</strong>
+                        <small>Poder 0</small>
+                      </div>
                     </button>
                   </article>
 
@@ -722,7 +754,7 @@
                         <h3>Barra de Ouro</h3>
                         <p>10 minérios de ouro geram 1 barra de ouro.</p>
                         <p>Tempo: 10 minutos</p>
-                        <p>Venda no mercado: 50 créditos</p>
+                        <p>Venda no mercado: 80 créditos</p>
                         <p class="estoque-receita" data-estoque="minerio_ouro">Minérios: 0</p>
                       </div>
 
@@ -965,6 +997,86 @@
     </div>
   </div>
 
+
+  <div class="modal-evento-batalha" id="modalEventoBatalha" aria-hidden="true">
+    <div class="modal-evento-batalha-caixa" role="dialog" aria-modal="true" aria-labelledby="tituloModalEventoBatalha">
+      <span class="modal-evento-batalha-subtitulo">EVENTO DE BATALHA</span>
+      <h2 id="tituloModalEventoBatalha">Contrabando de pessoas</h2>
+
+      <div class="modal-evento-batalha-corpo">
+        <img id="imagemModalEventoBatalha" src="imagens/batalhas/eventos/terra1.png" alt="Contrabando de pessoas">
+
+        <div class="modal-evento-batalha-info">
+          <p id="textoModalEventoBatalha">Uma rota clandestina foi detectada na Terra.</p>
+          <p id="statusModalEventoBatalha">Aguardando inicio</p>
+        </div>
+      </div>
+
+      <div class="modal-evento-batalha-progresso">
+        <div class="modal-evento-batalha-status">
+          <span id="textoProgressoEventoBatalha">Pronto para iniciar</span>
+          <strong id="tempoEventoBatalha">5min</strong>
+        </div>
+
+        <div class="barra-modal-evento-batalha">
+          <div id="barraEventoBatalha"></div>
+        </div>
+      </div>
+
+      <button type="button" class="botao-ir-missao-batalha" id="botaoIrMissaoBatalha">
+        Ir para a missao
+      </button>
+
+      <button type="button" class="botao-iniciar-batalha-evento" id="botaoIniciarBatalhaEvento" hidden="">
+        Batalhar
+      </button>
+    </div>
+  </div>
+
+  <div class="modal-batalha" id="modalBatalha" aria-hidden="true">
+    <div class="modal-batalha-caixa" role="dialog" aria-modal="true" aria-labelledby="tituloModalBatalha">
+      <span class="modal-batalha-subtitulo">BATALHA AUTOMATICA</span>
+      <h2 id="tituloModalBatalha">Contrabando de pessoas</h2>
+
+      <div class="batalha-status-texto" id="statusBatalha">Lian inicia o ataque.</div>
+
+      <div class="campo-batalha" id="campoBatalha">
+        <article class="combatente-card player" id="cardPlayerBatalha">
+          <span>Player</span>
+          <img id="imagemPlayerBatalha" src="imagens/personagens/lian.png" alt="Lian">
+          <h3 id="nomePlayerBatalha">Lian</h3>
+          <div class="hp-combatente">
+            <div class="hp-combatente-topo">
+              <span>HP</span>
+              <strong id="hpTextoPlayerBatalha">20 / 20</strong>
+            </div>
+            <div class="barra-hp-combatente">
+              <div id="barraHpPlayerBatalha"></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="combatente-card inimigo" id="cardInimigoBatalha">
+          <span>Inimigo</span>
+          <img id="imagemInimigoBatalha" src="imagens/batalhas/inimigos/pirata1.png" alt="Pirata">
+          <h3 id="nomeInimigoBatalha">Pirata</h3>
+          <div class="hp-combatente">
+            <div class="hp-combatente-topo">
+              <span>HP</span>
+              <strong id="hpTextoInimigoBatalha">15 / 15</strong>
+            </div>
+            <div class="barra-hp-combatente">
+              <div id="barraHpInimigoBatalha"></div>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <button type="button" class="botao-concluir-batalha" id="botaoConcluirBatalha" hidden="">
+        Concluir batalha
+      </button>
+    </div>
+  </div>
 
   <div class="modal-modulos-nave" id="modalModulosNave" aria-hidden="true">
     <div class="modal-modulos-nave-caixa" role="dialog" aria-modal="true" aria-labelledby="tituloModalModulosNave">
