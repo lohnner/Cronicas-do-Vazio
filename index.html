@@ -207,9 +207,9 @@
               <section class="missoes-conteudo">
                 <article class="missao-card">
                   <span class="missao-etiqueta" id="etiquetaMissaoAtual">Treinamento de Viajante</span>
-                  <h2 id="tituloMissaoAtual">Bem-vindo ao treino de viajante</h2>
-                  <p id="textoMissaoAtual">Piloto, eu sou a IA de bordo da Nave Mãe. Antes de atravessar o vazio por conta própria, você precisa provar que sabe cumprir uma rota simples: sair da segurança da estação, chegar à Terra e voltar com seu primeiro recurso de mineração.</p>
-                  <div class="missao-objetivo" id="objetivoMissaoAtual">Viaje até a Terra e colete minério de ouro.</div>
+                  <h2 id="tituloMissaoAtual">Rota inicial para a Terra</h2>
+                  <p id="textoMissaoAtual">Piloto, eu sou a IA de bordo da Nave Mãe. Antes de iniciar qualquer coleta, confirme que sabe usar o mapa de rotas e alcançar a Terra sem perder o controle da nave.</p>
+                  <div class="missao-objetivo" id="objetivoMissaoAtual">Clique na aba Localização viaja até a Terra</div>
                 </article>
               </section>
             </div>
@@ -227,6 +227,15 @@
                     <div class="item-nave-texto">
                       <strong>Pioneira</strong>
                       <span>Nível 1</span>
+                    </div>
+                  </button>
+
+                  <button type="button" class="item-nave" data-nave="Aurora" data-imagem="imagens/naves/aurora.png">
+                    <img src="imagens/naves/aurora.png" alt="Nave Aurora">
+
+                    <div class="item-nave-texto">
+                      <strong>Aurora</strong>
+                      <span>100.000 créditos</span>
                     </div>
                   </button>
                 </div>
@@ -251,6 +260,11 @@
                     </div>
 
                     <div class="informacao-nave-linha">
+                      <span>Velocidade real estimada</span>
+                      <strong id="velocidadeRealNave">170.455 km/s</strong>
+                    </div>
+
+                    <div class="informacao-nave-linha">
                       <span>Tripulação</span>
                       <strong id="tripulacaoNave">2</strong>
                     </div>
@@ -258,6 +272,16 @@
                     <div class="informacao-nave-linha">
                       <span>Poder</span>
                       <strong id="poderNave">10</strong>
+                    </div>
+
+                    <div class="informacao-nave-linha">
+                      <span>HP</span>
+                      <strong id="hpNave">26</strong>
+                    </div>
+
+                    <div class="informacao-nave-linha">
+                      <span>Ataque</span>
+                      <strong id="ataqueNave">8</strong>
                     </div>
 
                     <div class="informacao-nave-linha">
@@ -279,6 +303,19 @@
                       <span>Capacidade de uso</span>
                       <strong id="capacidadeUsoNave">100 pontos</strong>
                     </div>
+
+                    <div class="informacao-nave-linha">
+                      <span>Custo</span>
+                      <strong id="custoNave">Inicial</strong>
+                    </div>
+
+                    <button type="button" class="botao-acao-nave" id="botaoAcaoNave">
+                      Equipada
+                    </button>
+
+                    <button type="button" class="botao-modulos-nave" id="botaoAbrirModulosNave">
+                      Módulos da Nave
+                    </button>
 
                     <div class="barras-estado-nave">
                       <div class="estado-nave">
@@ -441,7 +478,7 @@
                 <section class="painel-local-viajando" id="painelLocalViajando" hidden="">
                   <span class="local-viajando-etiqueta">VIAGEM EM ANDAMENTO</span>
                   <h2 id="tituloLocalViajando">Aguarde, viajando no momento</h2>
-                  <p id="textoLocalViajando">A Pioneira está em rota.</p>
+                  <p id="textoLocalViajando">A nave equipada está em rota.</p>
 
                   <div class="local-viajando-tempo">
                     <span>Tempo restante</span>
@@ -535,7 +572,7 @@
                     <article class="servico-nave-mae">
                       <div>
                         <strong>Encher tanque de Xenônio-9</strong>
-                        <span>Completa 100% do combustível da Pioneira.</span>
+                        <span>Completa 100% do combustível da nave equipada.</span>
                       </div>
                       <button type="button" id="botaoReabastecer">
                         10 créditos
@@ -544,8 +581,8 @@
 
                     <article class="servico-nave-mae">
                       <div>
-                        <strong>Consertar Pioneira</strong>
-                        <span>Restaura 100% da integridade da Pioneira.</span>
+                        <strong>Consertar nave equipada</strong>
+                        <span>Restaura 100% da integridade da nave equipada.</span>
                       </div>
                       <button type="button" id="botaoReparar">
                         10 créditos
@@ -563,7 +600,7 @@
                 <h1>Tripulação</h1>
 
                 <div class="tripulacao-resumo">
-                  <span>Espaços da Pioneira</span>
+                  <span>Espaços da nave equipada</span>
                   <strong id="capacidadeTripulacaoTexto">1 / 2</strong>
                 </div>
 
@@ -609,7 +646,7 @@
                       <div class="tripulante-placeholder">+</div>
                       <div>
                         <h2>Sem tripulante</h2>
-                        <p>Espaço livre da Pioneira</p>
+                        <p>Espaço livre da nave equipada</p>
                         <strong>Poder 0</strong>
                       </div>
                     </div>
@@ -844,6 +881,40 @@
       <button type="button" class="botao-coletar-modal-mineracao" id="coletarModalMineracao" hidden="">
         Coletar recompensa
       </button>
+    </div>
+  </div>
+
+
+  <div class="modal-modulos-nave" id="modalModulosNave" aria-hidden="true">
+    <div class="modal-modulos-nave-caixa" role="dialog" aria-modal="true" aria-labelledby="tituloModalModulosNave">
+      <div class="modal-modulos-nave-topo">
+        <div>
+          <span class="modal-modulos-nave-subtitulo">CONFIGURAÇÃO DA NAVE</span>
+          <h2 id="tituloModalModulosNave">Módulos da Nave</h2>
+          <p id="nomeNaveModulos">Pioneira</p>
+        </div>
+
+        <button type="button" class="fechar-modal-modulos-nave" id="fecharModalModulosNave" aria-label="Fechar Módulos da Nave">
+          ×
+        </button>
+      </div>
+
+      <div class="modal-modulos-nave-corpo">
+        <section class="modulos-nave-area">
+          <h3>Módulos Equipados</h3>
+          <div class="modulos-equipados-grade" id="modulosEquipadosGrade"></div>
+        </section>
+
+        <section class="modulos-inventario-area">
+          <h3>Inventário de Módulos</h3>
+          <div class="modulos-inventario-lista" id="modulosInventarioLista"></div>
+        </section>
+      </div>
+
+      <div class="modal-modulos-nave-acoes">
+        <button type="button" id="botaoEquiparModuloNave" disabled="">Equipar na Nave</button>
+        <button type="button" id="botaoDesequiparModuloNave" disabled="">Desequipar</button>
+      </div>
     </div>
   </div>
 

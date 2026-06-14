@@ -446,29 +446,344 @@ const nomeNaveSelecionada = document.getElementById("nomeNaveSelecionada");
 const imagemNaveSelecionada = document.getElementById("imagemNaveSelecionada");
 const nomeNaveEquipadaPerfil = document.getElementById("nomeNaveEquipadaPerfil");
 const imagemNaveEquipadaPerfil = document.getElementById("imagemNaveEquipadaPerfil");
+const velocidadeNave = document.getElementById("velocidadeNave");
+const velocidadeRealNave = document.getElementById("velocidadeRealNave");
+const inventarioNave = document.getElementById("inventarioNave");
+const tipoCombustivelNave = document.getElementById("tipoCombustivelNave");
+const capacidadeCombustivelNave = document.getElementById("capacidadeCombustivelNave");
+const capacidadeUsoNave = document.getElementById("capacidadeUsoNave");
+const hpNave = document.getElementById("hpNave");
+const ataqueNave = document.getElementById("ataqueNave");
+const custoNave = document.getElementById("custoNave");
+const botaoAcaoNave = document.getElementById("botaoAcaoNave");
+const botaoAbrirModulosNave = document.getElementById("botaoAbrirModulosNave");
+const modalModulosNave = document.getElementById("modalModulosNave");
+const fecharModalModulosNave = document.getElementById("fecharModalModulosNave");
+const nomeNaveModulos = document.getElementById("nomeNaveModulos");
+const modulosEquipadosGrade = document.getElementById("modulosEquipadosGrade");
+const modulosInventarioLista = document.getElementById("modulosInventarioLista");
+const botaoEquiparModuloNave = document.getElementById("botaoEquiparModuloNave");
+const botaoDesequiparModuloNave = document.getElementById("botaoDesequiparModuloNave");
 
 const CHAVE_NAVE_EQUIPADA = "cronicas_do_vazio_nave_equipada";
+const CHAVE_NAVES_COMPRADAS = "cronicas_do_vazio_naves_compradas";
+const CHAVE_MODULOS_EQUIPADOS_NAVE = "cronicas_do_vazio_modulos_equipados_nave";
+const CHAVE_INVENTARIO_MODULOS_NAVE = "cronicas_do_vazio_inventario_modulos_nave";
+const DISTANCIA_TERRA_MARTE_KM = 225000000;
+const TEMPO_PIONEIRA_TERRA_MARTE_SEGUNDOS = 22 * SEGUNDOS_POR_MINUTO;
 
 const NAVES = {
   Pioneira: {
     nome: "Pioneira",
     imagem: "imagens/naves/pioneira.png",
+    velocidade: 120,
     capacidadeTripulacao: 2,
-    poder: 10
+    poder: 10,
+    inventario: 5,
+    combustivel: "Xenônio-9",
+    capacidadeCombustivel: 80,
+    capacidadeUso: 100,
+    hp: 26,
+    ataque: 8,
+    custo: 0
+  },
+  Aurora: {
+    nome: "Aurora",
+    imagem: "imagens/naves/aurora.png",
+    velocidade: 150,
+    capacidadeTripulacao: 3,
+    poder: 25,
+    inventario: 8,
+    combustivel: "Xenônio-9",
+    capacidadeCombustivel: 120,
+    capacidadeUso: 140,
+    hp: 53,
+    ataque: 16,
+    custo: 100000
   }
 };
 
+const TIPOS_MODULOS_NAVE = [
+  { id: "combustivel", nome: "Módulo de Combustível" },
+  { id: "propulsao", nome: "Módulo de Propulsão" },
+  { id: "armamento", nome: "Módulo de Armamento" },
+  { id: "blindagem", nome: "Módulo de Blindagem" },
+  { id: "escudo", nome: "Módulo de Escudo" },
+  { id: "carga", nome: "Módulo de Carga" },
+  { id: "reparacao", nome: "Módulo de Reparação" },
+  { id: "mineracao", nome: "Módulo de Mineração" },
+  { id: "scanner", nome: "Módulo de Scanner" }
+];
+
+const ROTULOS_BONUS_MODULO_NAVE = {
+  velocidade: "Velocidade",
+  capacidadeCombustivel: "Combustível",
+  capacidadeUso: "Integridade",
+  capacidadeTripulacao: "Tripulação",
+  poder: "Poder",
+  hp: "HP",
+  ataque: "Ataque",
+  inventario: "Inventário",
+  escudo: "Escudo",
+  reparacao: "Reparação",
+  mineracao: "Mineração",
+  scanner: "Scanner"
+};
+
+const ATRIBUTOS_NUMERICOS_NAVE = [
+  "velocidade",
+  "capacidadeTripulacao",
+  "poder",
+  "inventario",
+  "capacidadeCombustivel",
+  "capacidadeUso",
+  "hp",
+  "ataque",
+  "escudo",
+  "reparacao",
+  "mineracao",
+  "scanner"
+];
+
+let naveSelecionadaAtual = "Pioneira";
+let selecaoModuloNave = null;
+
+function formatarCreditos(valor) {
+  return Math.floor(Number(valor) || 0).toLocaleString("pt-BR");
+}
+
+function carregarNavesCompradas() {
+  const salvo = localStorage.getItem(CHAVE_NAVES_COMPRADAS);
+  let compradas = ["Pioneira"];
+
+  if (salvo) {
+    try {
+      const lista = JSON.parse(salvo);
+      if (Array.isArray(lista)) {
+        compradas = [...new Set(["Pioneira", ...lista.filter((nome) => NAVES[nome])])];
+      }
+    } catch {
+      localStorage.removeItem(CHAVE_NAVES_COMPRADAS);
+    }
+  }
+
+  localStorage.setItem(CHAVE_NAVES_COMPRADAS, JSON.stringify(compradas));
+  return compradas;
+}
+
+function salvarNavesCompradas(naves) {
+  const compradas = [...new Set(["Pioneira", ...naves.filter((nome) => NAVES[nome])])];
+  localStorage.setItem(CHAVE_NAVES_COMPRADAS, JSON.stringify(compradas));
+  return compradas;
+}
+
+function naveEstaComprada(nomeNave) {
+  return carregarNavesCompradas().includes(nomeNave);
+}
+
+function obterNomeNaveEquipada() {
+  const nome = localStorage.getItem(CHAVE_NAVE_EQUIPADA) || "Pioneira";
+  return naveEstaComprada(nome) && NAVES[nome] ? nome : "Pioneira";
+}
+
+function tipoModuloValido(tipo) {
+  return TIPOS_MODULOS_NAVE.some((item) => item.id === tipo);
+}
+
+function obterNomeTipoModulo(tipo) {
+  return TIPOS_MODULOS_NAVE.find((item) => item.id === tipo)?.nome || "Módulo";
+}
+
+function criarSlotsModulosVazios() {
+  return TIPOS_MODULOS_NAVE.reduce((slots, tipo) => {
+    slots[tipo.id] = null;
+    return slots;
+  }, {});
+}
+
+function normalizarBonusModuloNave(bonus) {
+  const normalizado = {};
+
+  if (!bonus || typeof bonus !== "object") return normalizado;
+
+  ATRIBUTOS_NUMERICOS_NAVE.forEach((atributo) => {
+    const valor = Number(bonus[atributo]);
+
+    if (Number.isFinite(valor) && valor !== 0) {
+      normalizado[atributo] = valor;
+    }
+  });
+
+  return normalizado;
+}
+
+function normalizarModuloNave(modulo) {
+  if (!modulo || typeof modulo !== "object") return null;
+
+  const tipo = String(modulo.tipo || modulo.slot || "");
+  if (!tipoModuloValido(tipo)) return null;
+
+  const nomePadrao = obterNomeTipoModulo(tipo);
+  const nome = String(modulo.nome || nomePadrao);
+  const idBase = `${tipo}_${nome.toLowerCase().replace(/[^a-z0-9]+/gi, "_")}`;
+
+  return {
+    id: String(modulo.id || idBase),
+    nome,
+    tipo,
+    bonus: normalizarBonusModuloNave(modulo.bonus || modulo.bonusAtributos)
+  };
+}
+
+function chaveModulosEquipadosNave(nomeNave = naveSelecionadaAtual) {
+  return `${CHAVE_MODULOS_EQUIPADOS_NAVE}_${nomeNave}`;
+}
+
+function carregarModulosEquipadosNave(nomeNave = naveSelecionadaAtual) {
+  const chave = chaveModulosEquipadosNave(nomeNave);
+  const salvo = localStorage.getItem(chave);
+  const modulos = criarSlotsModulosVazios();
+
+  if (salvo) {
+    try {
+      const dados = JSON.parse(salvo);
+
+      TIPOS_MODULOS_NAVE.forEach((tipo) => {
+        modulos[tipo.id] = normalizarModuloNave(dados?.[tipo.id]);
+      });
+    } catch {
+      localStorage.removeItem(chave);
+    }
+  }
+
+  localStorage.setItem(chave, JSON.stringify(modulos));
+  return modulos;
+}
+
+function salvarModulosEquipadosNave(nomeNave, modulos) {
+  const normalizados = criarSlotsModulosVazios();
+
+  TIPOS_MODULOS_NAVE.forEach((tipo) => {
+    normalizados[tipo.id] = normalizarModuloNave(modulos?.[tipo.id]);
+  });
+
+  localStorage.setItem(chaveModulosEquipadosNave(nomeNave), JSON.stringify(normalizados));
+  return normalizados;
+}
+
+function carregarInventarioModulosNave() {
+  const salvo = localStorage.getItem(CHAVE_INVENTARIO_MODULOS_NAVE);
+
+  if (!salvo) {
+    localStorage.setItem(CHAVE_INVENTARIO_MODULOS_NAVE, JSON.stringify([]));
+    return [];
+  }
+
+  try {
+    const inventario = JSON.parse(salvo);
+    const normalizado = Array.isArray(inventario)
+      ? inventario.map(normalizarModuloNave).filter(Boolean)
+      : [];
+
+    localStorage.setItem(CHAVE_INVENTARIO_MODULOS_NAVE, JSON.stringify(normalizado));
+    return normalizado;
+  } catch {
+    localStorage.setItem(CHAVE_INVENTARIO_MODULOS_NAVE, JSON.stringify([]));
+    return [];
+  }
+}
+
+function salvarInventarioModulosNave(inventario) {
+  const normalizado = Array.isArray(inventario)
+    ? inventario.map(normalizarModuloNave).filter(Boolean)
+    : [];
+
+  localStorage.setItem(CHAVE_INVENTARIO_MODULOS_NAVE, JSON.stringify(normalizado));
+  return normalizado;
+}
+
+function calcularBonusModulosNave(nomeNave) {
+  const modulos = carregarModulosEquipadosNave(nomeNave);
+
+  return Object.values(modulos).reduce((bonusTotal, modulo) => {
+    if (!modulo?.bonus) return bonusTotal;
+
+    Object.entries(modulo.bonus).forEach(([atributo, valor]) => {
+      bonusTotal[atributo] = (bonusTotal[atributo] || 0) + valor;
+    });
+
+    return bonusTotal;
+  }, {});
+}
+
+function obterNaveComModulos(nomeNave) {
+  const base = NAVES[nomeNave] || NAVES.Pioneira;
+  const bonus = calcularBonusModulosNave(base.nome);
+  const nave = { ...base, bonusModulos: bonus };
+
+  ATRIBUTOS_NUMERICOS_NAVE.forEach((atributo) => {
+    if (typeof base[atributo] !== "number") return;
+
+    const valor = base[atributo] + (bonus[atributo] || 0);
+    nave[atributo] = Math.max(0, Math.floor(valor));
+  });
+
+  return nave;
+}
+
+function calcularVelocidadeRealNave(nave) {
+  const velocidadeRealPioneira = DISTANCIA_TERRA_MARTE_KM / TEMPO_PIONEIRA_TERRA_MARTE_SEGUNDOS;
+  return velocidadeRealPioneira * (nave.velocidade / NAVES.Pioneira.velocidade);
+}
+
+function formatarKm(valor) {
+  return Math.round(valor).toLocaleString("pt-BR");
+}
+
+function atualizarAcaoNave() {
+  if (!botaoAcaoNave) return;
+
+  const nomeEquipado = obterNomeNaveEquipada();
+  const nave = NAVES[naveSelecionadaAtual] || NAVES.Pioneira;
+  const comprada = naveEstaComprada(nave.nome);
+
+  botaoAcaoNave.disabled = false;
+
+  if (nomeEquipado === nave.nome) {
+    botaoAcaoNave.textContent = "Equipada";
+    botaoAcaoNave.disabled = true;
+    return;
+  }
+
+  if (comprada) {
+    botaoAcaoNave.textContent = "Equipar";
+    return;
+  }
+
+  botaoAcaoNave.textContent = `Comprar ${formatarCreditos(nave.custo)} créditos`;
+}
+
 function aplicarNaveSelecionada(nomeNave) {
-  const nave = NAVES[nomeNave] || NAVES.Pioneira;
+  const nave = obterNaveComModulos(nomeNave);
+  const naveEquipada = obterNaveComModulos(obterNomeNaveEquipada());
+  naveSelecionadaAtual = nave.nome;
 
   nomeNaveSelecionada.textContent = nave.nome;
   imagemNaveSelecionada.src = nave.imagem;
 
-  nomeNaveEquipadaPerfil.textContent = nave.nome;
-  imagemNaveEquipadaPerfil.src = nave.imagem;
+  nomeNaveEquipadaPerfil.textContent = naveEquipada.nome;
+  imagemNaveEquipadaPerfil.src = naveEquipada.imagem;
 
   const tripulacaoNave = document.getElementById("tripulacaoNave");
   const poderNave = document.getElementById("poderNave");
+
+  if (velocidadeNave) {
+    velocidadeNave.textContent = `${nave.velocidade} km/s`;
+  }
+
+  if (velocidadeRealNave) {
+    velocidadeRealNave.textContent = `${formatarKm(calcularVelocidadeRealNave(nave))} km/s`;
+  }
 
   if (tripulacaoNave) {
     tripulacaoNave.textContent = String(nave.capacidadeTripulacao);
@@ -478,21 +793,294 @@ function aplicarNaveSelecionada(nomeNave) {
     poderNave.textContent = String(nave.poder);
   }
 
+  if (hpNave) hpNave.textContent = String(nave.hp);
+  if (ataqueNave) ataqueNave.textContent = String(nave.ataque);
+  if (inventarioNave) inventarioNave.textContent = String(nave.inventario);
+  if (tipoCombustivelNave) tipoCombustivelNave.textContent = nave.combustivel;
+  if (capacidadeCombustivelNave) capacidadeCombustivelNave.textContent = `${nave.capacidadeCombustivel} unidades`;
+  if (capacidadeUsoNave) capacidadeUsoNave.textContent = `${nave.capacidadeUso} pontos`;
+  if (custoNave) custoNave.textContent = nave.custo > 0 ? `${formatarCreditos(nave.custo)} créditos` : "Inicial";
+
   itensNave.forEach((item) => {
-    item.classList.toggle("ativo", item.dataset.nave === nave.nome);
+    const nomeItem = item.dataset.nave;
+    const naveItem = NAVES[nomeItem];
+    const comprada = naveEstaComprada(nomeItem);
+    const status = item.querySelector(".item-nave-texto span");
+
+    item.classList.toggle("ativo", nomeItem === nave.nome);
+    item.classList.toggle("comprada", comprada);
+    item.classList.toggle("equipada", nomeItem === naveEquipada.nome);
+
+    if (status && naveItem) {
+      if (nomeItem === naveEquipada.nome) {
+        status.textContent = "Equipada";
+      } else if (comprada) {
+        status.textContent = "Comprada";
+      } else {
+        status.textContent = `${formatarCreditos(naveItem.custo)} créditos`;
+      }
+    }
   });
+
+  atualizarAcaoNave();
+
+  if (modalModulosNave?.classList.contains("ativo")) {
+    renderizarModulosNave();
+  }
+}
+
+function equiparNave(nomeNave) {
+  const nave = NAVES[nomeNave];
+  if (!nave || !naveEstaComprada(nomeNave)) return;
+
+  localStorage.setItem(CHAVE_NAVE_EQUIPADA, nomeNave);
+  aplicarNaveSelecionada(nomeNave);
+
+  if (typeof aplicarEstadoPioneira === "function") aplicarEstadoPioneira();
+  if (typeof renderizarInventarioPioneira === "function") renderizarInventarioPioneira();
+  if (typeof renderizarInventarioNaveMae === "function") renderizarInventarioNaveMae();
+  if (typeof atualizarSistemaTripulacao === "function") atualizarSistemaTripulacao();
+}
+
+function comprarOuEquiparNaveSelecionada() {
+  const nave = NAVES[naveSelecionadaAtual] || NAVES.Pioneira;
+
+  if (naveEstaComprada(nave.nome)) {
+    equiparNave(nave.nome);
+    return;
+  }
+
+  if (!gastarCreditos(nave.custo)) return;
+
+  salvarNavesCompradas([...carregarNavesCompradas(), nave.nome]);
+  equiparNave(nave.nome);
+}
+
+function formatarBonusModuloNave(modulo) {
+  const bonus = modulo?.bonus || {};
+  const entradas = Object.entries(bonus).filter(([, valor]) => Number(valor) !== 0);
+
+  if (!entradas.length) return "Sem bônus de atributo";
+
+  return entradas
+    .map(([atributo, valor]) => {
+      const sinal = valor > 0 ? "+" : "";
+      return `${sinal}${valor} ${ROTULOS_BONUS_MODULO_NAVE[atributo] || atributo}`;
+    })
+    .join(" • ");
+}
+
+function limparSelecaoModuloNave() {
+  selecaoModuloNave = null;
+  renderizarModulosNave();
+}
+
+function selecionarModuloInventario(indice) {
+  selecaoModuloNave = { origem: "inventario", indice };
+  renderizarModulosNave();
+}
+
+function selecionarModuloEquipado(tipo) {
+  selecaoModuloNave = { origem: "equipado", tipo };
+  renderizarModulosNave();
+}
+
+function atualizarBotoesModulosNave() {
+  if (botaoEquiparModuloNave) {
+    botaoEquiparModuloNave.disabled = selecaoModuloNave?.origem !== "inventario";
+  }
+
+  if (botaoDesequiparModuloNave) {
+    botaoDesequiparModuloNave.disabled = selecaoModuloNave?.origem !== "equipado";
+  }
+}
+
+function renderizarModulosNave() {
+  if (!modulosEquipadosGrade || !modulosInventarioLista) return;
+
+  const nomeNave = naveSelecionadaAtual;
+  const modulosEquipados = carregarModulosEquipadosNave(nomeNave);
+  const inventarioModulos = carregarInventarioModulosNave();
+
+  if (nomeNaveModulos) {
+    nomeNaveModulos.textContent = nomeNave;
+  }
+
+  modulosEquipadosGrade.innerHTML = "";
+
+  TIPOS_MODULOS_NAVE.forEach((tipo) => {
+    const modulo = modulosEquipados[tipo.id];
+    const slot = document.createElement("button");
+    const rotulo = document.createElement("span");
+    const nome = document.createElement("strong");
+    const detalhe = document.createElement("small");
+
+    slot.type = "button";
+    slot.className = "slot-modulo-nave";
+    slot.dataset.tipoModulo = tipo.id;
+
+    rotulo.textContent = tipo.nome;
+    nome.textContent = modulo ? modulo.nome : "Vazio";
+    detalhe.textContent = modulo ? formatarBonusModuloNave(modulo) : "Sem melhoria equipada";
+
+    if (modulo) {
+      slot.classList.add("preenchido");
+      slot.setAttribute("aria-label", `${tipo.nome}: ${modulo.nome}`);
+      slot.addEventListener("click", () => selecionarModuloEquipado(tipo.id));
+    } else {
+      slot.classList.add("vazio");
+      slot.setAttribute("aria-label", `${tipo.nome}: Vazio`);
+      slot.addEventListener("click", limparSelecaoModuloNave);
+    }
+
+    if (selecaoModuloNave?.origem === "equipado" && selecaoModuloNave.tipo === tipo.id) {
+      slot.classList.add("selecionado");
+    }
+
+    slot.append(rotulo, nome, detalhe);
+    modulosEquipadosGrade.appendChild(slot);
+  });
+
+  modulosInventarioLista.innerHTML = "";
+
+  if (!inventarioModulos.length) {
+    const vazio = document.createElement("p");
+    vazio.className = "modulos-inventario-vazio";
+    vazio.textContent = "Nenhum módulo no inventário.";
+    modulosInventarioLista.appendChild(vazio);
+  } else {
+    inventarioModulos.forEach((modulo, indice) => {
+      const item = document.createElement("button");
+      const tipo = document.createElement("span");
+      const nome = document.createElement("strong");
+      const detalhe = document.createElement("small");
+
+      item.type = "button";
+      item.className = "modulo-inventario-item";
+      item.dataset.indiceModulo = String(indice);
+      item.setAttribute("aria-label", `${modulo.nome}, ${obterNomeTipoModulo(modulo.tipo)}`);
+
+      tipo.textContent = obterNomeTipoModulo(modulo.tipo);
+      nome.textContent = modulo.nome;
+      detalhe.textContent = formatarBonusModuloNave(modulo);
+
+      if (selecaoModuloNave?.origem === "inventario" && selecaoModuloNave.indice === indice) {
+        item.classList.add("selecionado");
+      }
+
+      item.addEventListener("click", () => selecionarModuloInventario(indice));
+      item.append(tipo, nome, detalhe);
+      modulosInventarioLista.appendChild(item);
+    });
+  }
+
+  atualizarBotoesModulosNave();
+}
+
+function atualizarNaveDepoisDeModulo(nomeNave) {
+  aplicarNaveSelecionada(naveSelecionadaAtual);
+
+  if (obterNomeNaveEquipada() !== nomeNave) return;
+
+  if (typeof aplicarEstadoPioneira === "function") aplicarEstadoPioneira();
+  if (typeof renderizarInventarioPioneira === "function") renderizarInventarioPioneira();
+  if (typeof renderizarInventarioNaveMae === "function") renderizarInventarioNaveMae();
+  if (typeof atualizarSistemaTripulacao === "function") atualizarSistemaTripulacao();
+}
+
+function equiparModuloSelecionado() {
+  if (selecaoModuloNave?.origem !== "inventario") return;
+
+  const nomeNave = naveSelecionadaAtual;
+  const inventarioModulos = carregarInventarioModulosNave();
+  const moduloSelecionado = normalizarModuloNave(inventarioModulos[selecaoModuloNave.indice]);
+
+  if (!moduloSelecionado) {
+    limparSelecaoModuloNave();
+    return;
+  }
+
+  const modulosEquipados = carregarModulosEquipadosNave(nomeNave);
+  const moduloAntigo = modulosEquipados[moduloSelecionado.tipo];
+
+  modulosEquipados[moduloSelecionado.tipo] = moduloSelecionado;
+  inventarioModulos.splice(selecaoModuloNave.indice, 1);
+
+  if (moduloAntigo) {
+    inventarioModulos.push(moduloAntigo);
+  }
+
+  salvarModulosEquipadosNave(nomeNave, modulosEquipados);
+  salvarInventarioModulosNave(inventarioModulos);
+
+  selecaoModuloNave = null;
+  atualizarNaveDepoisDeModulo(nomeNave);
+  renderizarModulosNave();
+}
+
+function desequiparModuloSelecionado() {
+  if (selecaoModuloNave?.origem !== "equipado") return;
+
+  const nomeNave = naveSelecionadaAtual;
+  const modulosEquipados = carregarModulosEquipadosNave(nomeNave);
+  const moduloSelecionado = normalizarModuloNave(modulosEquipados[selecaoModuloNave.tipo]);
+
+  if (!moduloSelecionado) {
+    limparSelecaoModuloNave();
+    return;
+  }
+
+  const inventarioModulos = carregarInventarioModulosNave();
+  modulosEquipados[selecaoModuloNave.tipo] = null;
+  inventarioModulos.push(moduloSelecionado);
+
+  salvarModulosEquipadosNave(nomeNave, modulosEquipados);
+  salvarInventarioModulosNave(inventarioModulos);
+
+  selecaoModuloNave = null;
+  atualizarNaveDepoisDeModulo(nomeNave);
+  renderizarModulosNave();
+}
+
+function abrirModalModulosNave() {
+  selecaoModuloNave = null;
+  renderizarModulosNave();
+  modalModulosNave?.classList.add("ativo");
+  modalModulosNave?.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-aberto");
+}
+
+function fecharJanelaModulosNave() {
+  modalModulosNave?.classList.remove("ativo");
+  modalModulosNave?.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("modal-aberto");
+  selecaoModuloNave = null;
 }
 
 itensNave.forEach((item) => {
   item.addEventListener("click", () => {
-    const nomeNave = item.dataset.nave;
-    localStorage.setItem(CHAVE_NAVE_EQUIPADA, nomeNave);
-    aplicarNaveSelecionada(nomeNave);
+    aplicarNaveSelecionada(item.dataset.nave);
   });
 });
 
+botaoAcaoNave?.addEventListener("click", comprarOuEquiparNaveSelecionada);
+botaoAbrirModulosNave?.addEventListener("click", abrirModalModulosNave);
+fecharModalModulosNave?.addEventListener("click", fecharJanelaModulosNave);
+botaoEquiparModuloNave?.addEventListener("click", equiparModuloSelecionado);
+botaoDesequiparModuloNave?.addEventListener("click", desequiparModuloSelecionado);
+
+modalModulosNave?.addEventListener("click", (evento) => {
+  if (evento.target === modalModulosNave) fecharJanelaModulosNave();
+});
+
+document.addEventListener("keydown", (evento) => {
+  if (evento.key === "Escape" && modalModulosNave?.classList.contains("ativo")) {
+    fecharJanelaModulosNave();
+  }
+});
+
 const naveEquipadaSalva =
-  localStorage.getItem(CHAVE_NAVE_EQUIPADA) || "Pioneira";
+  obterNomeNaveEquipada();
 
 aplicarNaveSelecionada(naveEquipadaSalva);
 
@@ -530,10 +1118,17 @@ if (imagemPlanetaAtual) {
 // ===== DADOS INICIAIS DA NAVE PIONEIRA =====
 const CHAVE_ESTADO_PIONEIRA = "cronicas_do_vazio_estado_pioneira";
 
+function chaveEstadoNaveAtual() {
+  const nome = obterNomeNaveEquipada();
+  return nome === "Pioneira" ? CHAVE_ESTADO_PIONEIRA : `${CHAVE_ESTADO_PIONEIRA}_${nome}`;
+}
+
 function carregarEstadoPioneira() {
-  const capacidadeCombustivel = 80;
-  const capacidadeUso = 100;
-  const salvo = localStorage.getItem(CHAVE_ESTADO_PIONEIRA);
+  const nave = naveEquipadaAtual();
+  const capacidadeCombustivel = nave.capacidadeCombustivel;
+  const capacidadeUso = nave.capacidadeUso;
+  const chave = chaveEstadoNaveAtual();
+  const salvo = localStorage.getItem(chave);
 
   let estado = {
     combustivel: capacidadeCombustivel,
@@ -556,11 +1151,11 @@ function carregarEstadoPioneira() {
         Math.min(capacidadeUso, Number(antigo.uso ?? capacidadeUso))
       );
     } catch {
-      localStorage.removeItem(CHAVE_ESTADO_PIONEIRA);
+      localStorage.removeItem(chave);
     }
   }
 
-  localStorage.setItem(CHAVE_ESTADO_PIONEIRA, JSON.stringify(estado));
+  localStorage.setItem(chave, JSON.stringify(estado));
   return estado;
 }
 
@@ -580,8 +1175,9 @@ function aplicarEstadoPioneira(estadoRecebido = null) {
   const usoLocalViajandoTexto = document.getElementById("usoLocalViajandoTexto");
   const usoLocalViajandoBarra = document.getElementById("usoLocalViajandoBarra");
 
-  const capacidadeCombustivel = 80;
-  const capacidadeUso = 100;
+  const nave = naveEquipadaAtual();
+  const capacidadeCombustivel = estado.capacidadeCombustivel || nave.capacidadeCombustivel;
+  const capacidadeUso = estado.capacidadeUso || nave.capacidadeUso;
 
   const combustivel = Math.max(0, Math.min(capacidadeCombustivel, estado.combustivel));
   const uso = Math.max(0, Math.min(capacidadeUso, estado.uso));
@@ -614,14 +1210,17 @@ aplicarEstadoPioneira();
 
 // ===== CONSUMO DE COMBUSTÍVEL E INTEGRIDADE DURANTE A VIAGEM =====
 function salvarEstadoPioneira(estado) {
+  const nave = naveEquipadaAtual();
+  const capacidadeCombustivel = nave.capacidadeCombustivel;
+  const capacidadeUso = nave.capacidadeUso;
   const normalizado = {
-    combustivel: Math.max(0, Math.min(80, estado.combustivel)),
-    capacidadeCombustivel: 80,
-    uso: Math.max(0, Math.min(100, estado.uso)),
-    capacidadeUso: 100
+    combustivel: Math.max(0, Math.min(capacidadeCombustivel, estado.combustivel)),
+    capacidadeCombustivel,
+    uso: Math.max(0, Math.min(capacidadeUso, estado.uso)),
+    capacidadeUso
   };
 
-  localStorage.setItem(CHAVE_ESTADO_PIONEIRA, JSON.stringify(normalizado));
+  localStorage.setItem(chaveEstadoNaveAtual(), JSON.stringify(normalizado));
   aplicarEstadoPioneira(normalizado);
   return normalizado;
 }
@@ -644,7 +1243,7 @@ iniciarViagem = function(destino) {
   const duracaoSegundos = 8;
 
   if (!podeIniciarViagem(duracaoSegundos)) {
-    alert("A Pioneira não possui Xenônio-9 ou integridade suficiente para esta viagem.");
+    alert(`A ${naveEquipadaAtual().nome} não possui Xenônio-9 ou integridade suficiente para esta viagem.`);
     fecharConfirmacaoViagem();
     return;
   }
@@ -727,7 +1326,8 @@ const botaoColetarOuro = document.getElementById("botaoColetarOuro");
 const barraMineracaoPreenchida = document.getElementById("barraMineracaoPreenchida");
 const textoMineracao = document.getElementById("textoMineracao");
 const tempoMineracao = document.getElementById("tempoMineracao");
-const slotsInventario = document.querySelectorAll(".slot-inventario");
+const inventarioNaveGrade = document.getElementById("inventarioNaveGrade");
+let slotsInventario = document.querySelectorAll(".slot-inventario");
 
 const CHAVE_INVENTARIO_PIONEIRA = "cronicas_do_vazio_inventario_pioneira";
 const CHAVE_MINERACAO_OURO = "cronicas_do_vazio_mineracao_ouro";
@@ -785,8 +1385,37 @@ function normalizarItemInventario(item) {
   return item;
 }
 
-function normalizarPilhasInventario(inventario) {
-  const normalizado = Array(5).fill(null);
+function capacidadeInventarioNaveAtual() {
+  return naveEquipadaAtual().inventario || 5;
+}
+
+function chaveInventarioNaveAtual() {
+  const nome = obterNomeNaveEquipada();
+  return nome === "Pioneira" ? CHAVE_INVENTARIO_PIONEIRA : `${CHAVE_INVENTARIO_PIONEIRA}_${nome}`;
+}
+
+function garantirSlotsInventario(capacidade) {
+  if (!inventarioNaveGrade) return;
+
+  while (inventarioNaveGrade.children.length < capacidade) {
+    const indice = inventarioNaveGrade.children.length;
+    const slot = document.createElement("button");
+    slot.type = "button";
+    slot.className = "slot-inventario";
+    slot.dataset.slot = String(indice);
+    slot.setAttribute("aria-label", `Espaço de inventário ${indice + 1}`);
+    inventarioNaveGrade.appendChild(slot);
+  }
+
+  while (inventarioNaveGrade.children.length > capacidade) {
+    inventarioNaveGrade.lastElementChild?.remove();
+  }
+
+  slotsInventario = document.querySelectorAll(".slot-inventario");
+}
+
+function normalizarPilhasInventario(inventario, capacidade = capacidadeInventarioNaveAtual()) {
+  const normalizado = Array(capacidade).fill(null);
   let proximoSlot = 0;
 
   inventario.forEach((itemOriginal) => {
@@ -810,35 +1439,40 @@ function normalizarPilhasInventario(inventario) {
 }
 
 function carregarInventarioPioneira() {
-  const salvo = localStorage.getItem(CHAVE_INVENTARIO_PIONEIRA);
+  const capacidade = capacidadeInventarioNaveAtual();
+  const chave = chaveInventarioNaveAtual();
+  const salvo = localStorage.getItem(chave);
 
   if (!salvo) {
-    const vazio = Array(5).fill(null);
-    localStorage.setItem(CHAVE_INVENTARIO_PIONEIRA, JSON.stringify(vazio));
+    const vazio = Array(capacidade).fill(null);
+    localStorage.setItem(chave, JSON.stringify(vazio));
     return vazio;
   }
 
   try {
     const inventario = JSON.parse(salvo);
     const normalizado = normalizarPilhasInventario(
-      Array.from({ length: 5 }, (_, i) => inventario[i] || null)
+      Array.from({ length: capacidade }, (_, i) => inventario[i] || null),
+      capacidade
     );
-    localStorage.setItem(CHAVE_INVENTARIO_PIONEIRA, JSON.stringify(normalizado));
+    localStorage.setItem(chave, JSON.stringify(normalizado));
     return normalizado;
   } catch {
-    const vazio = Array(5).fill(null);
-    localStorage.setItem(CHAVE_INVENTARIO_PIONEIRA, JSON.stringify(vazio));
+    const vazio = Array(capacidade).fill(null);
+    localStorage.setItem(chave, JSON.stringify(vazio));
     return vazio;
   }
 }
 
 function salvarInventarioPioneira(inventario) {
-  const normalizado = normalizarPilhasInventario(inventario);
-  localStorage.setItem(CHAVE_INVENTARIO_PIONEIRA, JSON.stringify(normalizado));
+  const normalizado = normalizarPilhasInventario(inventario, capacidadeInventarioNaveAtual());
+  localStorage.setItem(chaveInventarioNaveAtual(), JSON.stringify(normalizado));
   renderizarInventarioPioneira();
 }
 
 function renderizarInventarioPioneira() {
+  garantirSlotsInventario(capacidadeInventarioNaveAtual());
+
   const inventario = carregarInventarioPioneira();
 
   slotsInventario.forEach((slot, indice) => {
@@ -992,24 +1626,31 @@ const LOCALIZACOES = {
   }
 };
 
-function calcularTempoViagem(origem, destino) {
+function calcularDistanciaViagem(origem, destino) {
   if (origem === destino) return 0;
 
   const rota = [origem, destino].sort().join(">");
 
   if (rota === ["Nave Mãe", "Terra"].sort().join(">")) {
-    return 10 * SEGUNDOS_POR_MINUTO;
+    return DISTANCIA_TERRA_MARTE_KM / 2;
   }
 
   if (rota === ["Marte", "Nave Mãe"].sort().join(">")) {
-    return 10 * SEGUNDOS_POR_MINUTO;
+    return DISTANCIA_TERRA_MARTE_KM / 2;
   }
 
   if (rota === ["Marte", "Terra"].sort().join(">")) {
-    return 20 * SEGUNDOS_POR_MINUTO;
+    return DISTANCIA_TERRA_MARTE_KM;
   }
 
-  return 10 * SEGUNDOS_POR_MINUTO;
+  return DISTANCIA_TERRA_MARTE_KM / 2;
+}
+
+function calcularTempoViagem(origem, destino, nave = naveEquipadaAtual()) {
+  const distancia = calcularDistanciaViagem(origem, destino);
+  if (distancia <= 0) return 0;
+
+  return Math.max(1, Math.round(distancia / calcularVelocidadeRealNave(nave)));
 }
 
 function calcularConsumoCombustivelViagem(duracaoSegundos) {
@@ -1095,6 +1736,8 @@ abrirConfirmacaoViagem = function(destino) {
   const origem = localStorage.getItem(CHAVE_PLANETA) || PLANETA_INICIAL;
   if (destino === origem) return;
 
+  const nave = naveEquipadaAtual();
+  const distanciaKm = calcularDistanciaViagem(origem, destino);
   const tempoSegundos = calcularTempoViagem(origem, destino);
   const consumoCombustivel = calcularConsumoCombustivelViagem(tempoSegundos);
   const consumoUso = calcularConsumoIntegridadeViagem(tempoSegundos);
@@ -1103,7 +1746,8 @@ abrirConfirmacaoViagem = function(destino) {
 
   tituloModalViagem.textContent = `Viajar para ${destino}?`;
   descricaoModalViagem.textContent =
-    `A viagem de ${origem} até ${destino} demora ${formatarDuracao(tempoSegundos)}.`;
+    `A viagem de ${origem} até ${destino} percorre ${formatarKm(distanciaKm)} km ` +
+    `e demora ${formatarDuracao(tempoSegundos)} com a ${nave.nome}.`;
 
   resumoTempoViagem.textContent = formatarDuracao(tempoSegundos);
   resumoCombustivelViagem.textContent = `${consumoCombustivel} unidades`;
@@ -1117,6 +1761,7 @@ abrirConfirmacaoViagem = function(destino) {
 function atualizarPainelLocalViajando(destino, restanteSegundos) {
   if (!painelLocalViajando) return;
 
+  const nave = naveEquipadaAtual();
   painelLocalViajando.hidden = false;
 
   if (tituloLocalViajando) {
@@ -1124,7 +1769,7 @@ function atualizarPainelLocalViajando(destino, restanteSegundos) {
   }
 
   if (textoLocalViajando) {
-    textoLocalViajando.textContent = `A Pioneira está em rota para ${destino}.`;
+    textoLocalViajando.textContent = `A ${nave.nome} está em rota para ${destino}.`;
   }
 
   if (tempoLocalViajando) {
@@ -1153,7 +1798,7 @@ iniciarViagem = function(destino) {
   const consumoUsoTotal = calcularConsumoIntegridadeViagem(duracaoSegundos);
 
   if (!podeIniciarViagem(duracaoSegundos)) {
-    alert("A Pioneira não possui Xenônio-9 ou integridade suficiente.");
+    alert(`A ${naveEquipadaAtual().nome} não possui Xenônio-9 ou integridade suficiente.`);
     fecharConfirmacaoViagem();
     return;
   }
@@ -1208,6 +1853,7 @@ iniciarViagem = function(destino) {
     definirBloqueioCards(false);
     atualizarPlanetaDaConta(destino);
     atualizarInterfaceLocalizacao(destino);
+    if (destino === "Terra") concluirMissao("viajar_terra");
 
     if (caixaPlanetaAtual) caixaPlanetaAtual.classList.remove("viajando");
   }
@@ -1500,29 +2146,33 @@ gastarCreditos = function(valor) {
 // Reforça os serviços da Nave Mãe: sempre completa 100%.
 if (botaoReabastecer) {
   botaoReabastecer.onclick = () => {
+    const nave = naveEquipadaAtual();
     const estado = carregarEstadoPioneira();
 
-    if (estado.combustivel >= 80) {
+    if (estado.combustivel >= nave.capacidadeCombustivel) {
       alert("O tanque já está em 100%.");
+      concluirMissao("reabastecer_nave");
       return;
     }
 
     if (!gastarCreditos(10)) return;
 
     salvarEstadoPioneira({
-      combustivel: 80,
+      combustivel: nave.capacidadeCombustivel,
       uso: estado.uso
     });
 
     alert("Tanque cheio.");
+    concluirMissao("reabastecer_nave");
   };
 }
 
 if (botaoReparar) {
   botaoReparar.onclick = () => {
+    const nave = naveEquipadaAtual();
     const estado = carregarEstadoPioneira();
 
-    if (estado.uso >= 100) {
+    if (estado.uso >= nave.capacidadeUso) {
       alert("A integridade já está em 100%.");
       return;
     }
@@ -1531,10 +2181,10 @@ if (botaoReparar) {
 
     salvarEstadoPioneira({
       combustivel: estado.combustivel,
-      uso: 100
+      uso: nave.capacidadeUso
     });
 
-    alert("Pioneira consertada.");
+    alert(`${nave.nome} consertada.`);
   };
 }
 
@@ -1698,8 +2348,8 @@ if (imagemResultadoFabrica) {
 }
 
 function naveEquipadaAtual() {
-  const nome = localStorage.getItem(CHAVE_NAVE_EQUIPADA) || "Pioneira";
-  return NAVES[nome] || NAVES.Pioneira;
+  const nome = obterNomeNaveEquipada();
+  return obterNaveComModulos(nome);
 }
 
 function calcularPoderTripulacao() {
@@ -1750,12 +2400,6 @@ function atualizarSistemaTripulacao() {
     poderCapitaoTripulacao.textContent = `Poder ${TRIPULANTES.lian.poder}`;
   }
 
-  const poderNave = document.getElementById("poderNave");
-  const tripulacaoNave = document.getElementById("tripulacaoNave");
-
-  if (poderNave) poderNave.textContent = String(nave.poder);
-  if (tripulacaoNave) tripulacaoNave.textContent = String(nave.capacidadeTripulacao);
-
   atualizarEstadoVisualMineracao();
 }
 
@@ -1788,28 +2432,44 @@ function atualizarXPJogador() {
 
 const MISSOES_IA = [
   {
-    conclusao: "coletar_ouro",
+    conclusao: "viajar_terra",
     etiqueta: "Treinamento de Viajante",
-    titulo: "Bem-vindo ao treino de viajante",
+    titulo: "Rota inicial para a Terra",
     texto:
-      "Piloto, eu sou a IA de bordo da Nave Mãe. Antes de atravessar o vazio por conta própria, você precisa provar que sabe cumprir uma rota simples: sair da segurança da estação, chegar à Terra e voltar com seu primeiro recurso de mineração.",
-    objetivo: "Viaje até a Terra e colete minério de ouro."
+      "Piloto, eu sou a IA de bordo da Nave Mãe. Antes de iniciar qualquer coleta, confirme que sabe usar o mapa de rotas e alcançar a Terra sem perder o controle da nave.",
+    objetivo: "Clique na aba Localização viaja até a Terra"
+  },
+  {
+    conclusao: "coletar_ouro",
+    etiqueta: "Primeira Coleta",
+    titulo: "Ouro sob a crosta",
+    texto:
+      "A Terra ainda guarda veios antigos de ouro entre ruínas, crateras e poeira magnética. Aproxime a nave de uma zona segura e traga o primeiro minério bruto para o inventário.",
+    objetivo: "Agora na aba Local colete minério de ouro"
   },
   {
     conclusao: "fabricar_barra_ouro",
     etiqueta: "Forja Inicial",
     titulo: "Transforme minério em valor",
     texto:
-      "Excelente coleta. Minério bruto ocupa espaço e ainda não revela todo o seu valor. A próxima etapa do treino é usar a Fábrica para fundir o ouro e iniciar a produção da sua primeira barra comercial.",
-    objetivo: "Entre na Fábrica, selecione Minérios e coloque uma barra de ouro para fabricar."
+      "Excelente coleta. Minério bruto ocupa espaço e ainda não revela todo o seu valor. Use a Fábrica para fundir o ouro e abrir sua primeira rota de comércio. Enquanto as máquinas trabalham, sua nave pode continuar buscando mais minério.",
+    objetivo: "Clique na aba Fabrica e transforme seus minérios de ouro em barra de ouro, enquanto fabrica é opcional você pode estar coletando mais minério"
   },
   {
     conclusao: "vender_barra_ouro",
     etiqueta: "Primeiro Comércio",
     titulo: "Venda a primeira barra de ouro",
     texto:
-      "A linha de produção já está trabalhando. Enquanto a barra de ouro é preparada, volte para a Nave Mãe. Quando a fabricação terminar, colete a barra na Fábrica e venda no mercado da estação. Essa será sua primeira operação completa de coleta, fabricação e comércio.",
-    objetivo: "Volte para a Nave Mãe, colete a barra pronta e venda a barra de ouro no mercado."
+      "Com a barra pronta, retorne para a Nave Mãe. O mercado da estação reconhece metal refinado como carga comercial, e essa venda registra sua primeira operação completa de coleta, fabricação e comércio.",
+    objetivo: "Volte para a nave mãe na aba Localização, e venda sua barra de ouro na aba Local"
+  },
+  {
+    conclusao: "reabastecer_nave",
+    etiqueta: "Manutenção de Rota",
+    titulo: "Prepare o próximo salto",
+    texto:
+      "Toda rota deixa marcas no casco e no tanque. Antes que a IA libere contratos maiores, garanta que a nave esteja abastecida para não ficar presa longe da estação.",
+    objetivo: "Não esqueça que tem que reabastecer a nave, na aba Local na Nave mãe clique em Encher o tanque de Xenônio-9"
   }
 ];
 
@@ -1836,9 +2496,14 @@ function atualizarMissoes() {
   if (missoesConcluidasPerfil) missoesConcluidasPerfil.textContent = String(concluidas);
   if (missoesConcluidasAba) missoesConcluidasAba.textContent = String(concluidas);
 
+  if (missao?.conclusao === "viajar_terra" && localStorage.getItem(CHAVE_PLANETA) === "Terra") {
+    concluirMissao("viajar_terra");
+    return;
+  }
+
   if (!missao) {
-    if (etiquetaMissaoAtual) etiquetaMissaoAtual.textContent = "Em breve";
-    if (tituloMissaoAtual) tituloMissaoAtual.textContent = "Em breve mais missões";
+    if (etiquetaMissaoAtual) etiquetaMissaoAtual.textContent = "Continuação";
+    if (tituloMissaoAtual) tituloMissaoAtual.textContent = "Continuação em BREVE";
     if (textoMissaoAtual) {
       textoMissaoAtual.textContent =
         "Treinamento concluído com sucesso. A IA da Nave Mãe está preparando novos contratos, novas rotas e desafios mais profundos pelo vazio.";
@@ -1964,12 +2629,12 @@ function abrirModalMineracao(tipo) {
   if (!mineracao) return;
 
   if (!mineracaoPronta && calcularPoderTotal() < mineracao.poderNecessario) {
-    alert(`A Pioneira precisa de ${mineracao.poderNecessario} de poder para iniciar esta mineração.`);
+    alert(`A nave equipada precisa de ${mineracao.poderNecessario} de poder para iniciar esta mineração.`);
     return;
   }
 
   if (!mineracaoPronta && !podeAdicionarItemAoInventario(mineracao.item, mineracao.recompensaQuantidade)) {
-    alert("O inventário da Pioneira não possui espaço para esta recompensa.");
+    alert("O inventário da nave equipada não possui espaço para esta recompensa.");
     return;
   }
 
@@ -1992,7 +2657,7 @@ function iniciarMineracaoSelecionada() {
   if (!mineracao || mineracaoEmAndamento || mineracaoPronta) return;
 
   if (calcularPoderTotal() < mineracao.poderNecessario) {
-    alert(`A Pioneira precisa de ${mineracao.poderNecessario} de poder para iniciar esta mineração.`);
+    alert(`A nave equipada precisa de ${mineracao.poderNecessario} de poder para iniciar esta mineração.`);
     return;
   }
 
@@ -2000,7 +2665,7 @@ function iniciarMineracaoSelecionada() {
     const consumo = calcularConsumoAtividade(mineracao.tempoSegundos);
 
     alert(
-      `A Pioneira precisa de ${consumo.combustivel} Xenônio-9 e ` +
+      `A nave equipada precisa de ${consumo.combustivel} Xenônio-9 e ` +
       `${formatarNumeroRecurso(consumo.uso)} de integridade para iniciar esta mineração.`
     );
     return;
@@ -2105,7 +2770,7 @@ function adicionarItemAoInventario(itemBase, quantidade) {
     const slotLivre = inventario.findIndex((item) => item === null);
 
     if (slotLivre < 0) {
-      alert("O inventário da Pioneira está cheio.");
+      alert("O inventário da nave equipada está cheio.");
       return false;
     }
 
