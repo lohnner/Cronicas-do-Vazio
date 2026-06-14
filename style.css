@@ -3714,6 +3714,8 @@ input {
 .fabrica-painel {
   min-width: 0;
   height: 100%;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 .receitas-fabrica {

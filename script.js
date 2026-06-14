@@ -63,10 +63,13 @@ const TEMPO_MINERACAO_SEGUNDOS = 10 * SEGUNDOS_POR_MINUTO;
 const TEMPO_FABRICACAO_SEGUNDOS = 10 * SEGUNDOS_POR_MINUTO;
 const IMAGEM_MINERIO_OURO = "imagens/mineracao/minerios/mineriodeouro.png";
 const IMAGEM_MINERIO_COBRE = "imagens/mineracao/minerios/mineriodecobre.png";
+const IMAGEM_MINERIO_TITANIO = "imagens/mineracao/minerios/mineriodetitanio.png";
 const IMAGEM_BARRA_OURO = "imagens/mineracao/barras/barradeouro.png";
 const IMAGEM_BARRA_COBRE = "imagens/mineracao/barras/barradecobre.png";
+const IMAGEM_BARRA_TITANIO = "imagens/mineracao/barras/barradetitanio.png";
 const IMAGEM_EVENTO_OURO = "imagens/mineracao/eventos/mineracaoouro.png";
 const IMAGEM_EVENTO_COBRE = "imagens/mineracao/eventos/mineracaocobre.png";
+const IMAGEM_EVENTO_TITANIO = "imagens/mineracao/eventos/mineracaotitanio.png";
 
 const IMAGEM_TERRA = "imagens/local/sistemasolar/sistemasolarlocalplanetaterra.png";
 const IMAGEM_MARTE = "imagens/local/sistemasolar/sistemasolarlocalplanetamarte.png";
@@ -1365,12 +1368,21 @@ function normalizarItemInventario(item) {
     };
   }
 
+  if (item.id === "minerio_titanio") {
+    return {
+      ...item,
+      nome: item.nome || "Minério de Titânio",
+      imagem: IMAGEM_MINERIO_TITANIO,
+      preco: 1
+    };
+  }
+
   if (item.id === "barra_ouro") {
     return {
       ...item,
       nome: item.nome || "Barra de Ouro",
       imagem: IMAGEM_BARRA_OURO,
-      preco: item.preco || 20
+      preco: 50
     };
   }
 
@@ -1378,7 +1390,17 @@ function normalizarItemInventario(item) {
     return {
       ...item,
       nome: item.nome || "Barra de Cobre",
-      imagem: IMAGEM_BARRA_COBRE
+      imagem: IMAGEM_BARRA_COBRE,
+      preco: 20
+    };
+  }
+
+  if (item.id === "barra_titanio") {
+    return {
+      ...item,
+      nome: item.nome || "Barra de Titânio",
+      imagem: IMAGEM_BARRA_TITANIO,
+      preco: 30
     };
   }
 
@@ -1885,7 +1907,7 @@ function renderizarInventarioNaveMae() {
     `;
     botao.setAttribute("aria-label", `${item.nome}, quantidade ${item.quantidade}`);
 
-    if (item.id === "barra_ouro") {
+    if (Number(item.preco) > 0) {
       botao.addEventListener("click", () => abrirVendaOuro(item.quantidade, item));
     } else {
       botao.disabled = true;
@@ -1919,7 +1941,7 @@ function venderTodoOuro() {
 
   const inventario = carregarInventarioPioneira();
   const idItemVenda = itemVendaAtual?.id || "barra_ouro";
-  const precoItemVenda = itemVendaAtual?.preco || 20;
+  const precoItemVenda = itemVendaAtual?.preco || 50;
   const indice = inventario.findIndex((item) => item?.id === idItemVenda);
 
   if (indice < 0) {
@@ -1973,7 +1995,7 @@ function atualizarResumoVenda(ajustarCampo = false) {
 
   if (textoConfirmacaoVenda) {
     const nomeItem = itemVendaAtual?.nome || "Barra de Ouro";
-    const precoItem = itemVendaAtual?.preco || 20;
+    const precoItem = itemVendaAtual?.preco || 50;
 
     textoConfirmacaoVenda.textContent =
       `Voc\u00ea possui ${quantidadeMaximaOuroParaVenda} ${nomeItem}. Cada unidade vale ${precoItem} cr\u00e9ditos.`;
@@ -1990,7 +2012,7 @@ abrirVendaOuro = function(quantidade, item = null) {
   itemVendaAtual = {
     id: item?.id || "barra_ouro",
     nome: item?.nome || "Barra de Ouro",
-    preco: item?.preco || 20
+    preco: item?.preco || 50
   };
 
   if (tituloModalVenda) {
@@ -2040,7 +2062,7 @@ venderTodoOuro = function() {
 
   const inventario = carregarInventarioPioneira();
   const idItemVenda = itemVendaAtual?.id || "barra_ouro";
-  const precoItemVenda = itemVendaAtual?.preco || 20;
+  const precoItemVenda = itemVendaAtual?.preco || 50;
   const indice = inventario.findIndex((item) => item?.id === idItemVenda);
 
   if (indice < 0) {
@@ -2221,17 +2243,32 @@ const ITEM_MINERIO_COBRE = {
   imagem: IMAGEM_MINERIO_COBRE
 };
 
+const ITEM_MINERIO_TITANIO = {
+  id: "minerio_titanio",
+  nome: "Minério de Titânio",
+  imagem: IMAGEM_MINERIO_TITANIO,
+  preco: 1
+};
+
 const ITEM_BARRA_OURO = {
   id: "barra_ouro",
   nome: "Barra de Ouro",
   imagem: IMAGEM_BARRA_OURO,
-  preco: 20
+  preco: 50
 };
 
 const ITEM_BARRA_COBRE = {
   id: "barra_cobre",
   nome: "Barra de Cobre",
-  imagem: IMAGEM_BARRA_COBRE
+  imagem: IMAGEM_BARRA_COBRE,
+  preco: 20
+};
+
+const ITEM_BARRA_TITANIO = {
+  id: "barra_titanio",
+  nome: "Barra de Titânio",
+  imagem: IMAGEM_BARRA_TITANIO,
+  preco: 30
 };
 
 const TRIPULANTES = {
@@ -2309,6 +2346,15 @@ const RECEITAS_FABRICA = {
     saida: ITEM_BARRA_COBRE,
     duracaoSegundos: TEMPO_FABRICACAO_SEGUNDOS,
     energiaNecessaria: 10
+  },
+  barra_titanio: {
+    id: "barra_titanio",
+    nome: "Barra de Titânio",
+    entrada: ITEM_MINERIO_TITANIO,
+    quantidadeEntrada: 10,
+    saida: ITEM_BARRA_TITANIO,
+    duracaoSegundos: TEMPO_FABRICACAO_SEGUNDOS,
+    energiaNecessaria: 10
   }
 };
 
@@ -2335,6 +2381,16 @@ const MINERACOES = {
     recompensaQuantidade: 10,
     xp: 1,
     item: ITEM_MINERIO_COBRE
+  },
+  titanio: {
+    id: "titanio",
+    titulo: "Mineração de Minério de Titânio",
+    imagem: IMAGEM_EVENTO_TITANIO,
+    tempoSegundos: TEMPO_MINERACAO_SEGUNDOS,
+    poderNecessario: 10,
+    recompensaQuantidade: 10,
+    xp: 1,
+    item: ITEM_MINERIO_TITANIO
   }
 };
 

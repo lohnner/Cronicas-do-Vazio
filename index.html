@@ -547,6 +547,16 @@
 
                         <button type="button" class="botao-minerar" data-mineracao="cobre">Minerar</button>
                       </article>
+
+                      <article class="evento-mineracao" id="eventoMineracaoTitanio">
+                        <img class="imagem-evento-mineracao" src="imagens/mineracao/eventos/mineracaotitanio.png" alt="Mineração de titânio">
+
+                        <div class="evento-mineracao-info">
+                          <h3>Mineração de Minério de Titânio</h3>
+                        </div>
+
+                        <button type="button" class="botao-minerar" data-mineracao="titanio">Minerar</button>
+                      </article>
                     </div>
                   </section>
 
@@ -703,7 +713,7 @@
                         <h3>Barra de Ouro</h3>
                         <p>10 minérios de ouro geram 1 barra de ouro.</p>
                         <p>Tempo: 10 minutos</p>
-                        <p>Venda no mercado: 20 créditos</p>
+                        <p>Venda no mercado: 50 créditos</p>
                         <p class="estoque-receita" data-estoque="minerio_ouro">Minérios: 0</p>
                       </div>
 
@@ -732,6 +742,7 @@
                         <h3>Barra de Cobre</h3>
                         <p>10 minérios de cobre geram 1 barra de cobre.</p>
                         <p>Tempo: 10 minutos</p>
+                        <p>Venda no mercado: 20 créditos</p>
                         <p class="estoque-receita" data-estoque="minerio_cobre">Minérios: 0</p>
                       </div>
 
@@ -750,6 +761,35 @@
 
                       <button type="button" class="botao-coletar-fabricacao" data-coletar-receita="barra_cobre" hidden="">
                         Coletar barra de cobre
+                      </button>
+                    </article>
+
+                    <article class="receita-fabrica" data-receita="barra_titanio">
+                      <img src="imagens/mineracao/barras/barradetitanio.png" alt="Barra de titânio">
+
+                      <div class="receita-fabrica-info">
+                        <h3>Barra de Titânio</h3>
+                        <p>10 minérios de titânio geram 1 barra de titânio.</p>
+                        <p>Tempo: 10 minutos</p>
+                        <p>Venda no mercado: 30 créditos</p>
+                        <p class="estoque-receita" data-estoque="minerio_titanio">Minérios: 0</p>
+                      </div>
+
+                      <div class="fabricacao-progresso">
+                        <div class="fabrica-status">
+                          <span data-status-receita="barra_titanio">Pronto para fabricar</span>
+                          <strong data-tempo-receita="barra_titanio">10min</strong>
+                        </div>
+
+                        <div class="barra-fabricacao">
+                          <div data-barra-receita="barra_titanio" style="width: 0%;"></div>
+                        </div>
+                      </div>
+
+                      <button type="button" class="botao-fabricar" data-iniciar-receita="barra_titanio">Fabricar</button>
+
+                      <button type="button" class="botao-coletar-fabricacao" data-coletar-receita="barra_titanio" hidden="">
+                        Coletar barra de titânio
                       </button>
                     </article>
                   </div>
